@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoOrderFax", "AutoOrderFax\AutoOrderFax.csproj", "{C5F3D556-C26A-43C1-A210-7A3465C29203}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C5F3D556-C26A-43C1-A210-7A3465C29203}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5F3D556-C26A-43C1-A210-7A3465C29203}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5F3D556-C26A-43C1-A210-7A3465C29203}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5F3D556-C26A-43C1-A210-7A3465C29203}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3C6EBA3F-7D28-4328-8554-26F30C848626}
+	EndGlobalSection
+EndGlobal

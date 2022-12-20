@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Settings>
+	<LogFileDirectory>
+		C:\okita\pdf\Log
+	</LogFileDirectory>
+	<ConnectionString>
+    server=172.16.3.212\MSSQLSERVER2019; user id=sa;password=Sapassword1; database=PBS_V40_DATA_TEST;
+  </ConnectionString>
+	<OutputDirectory>
+		C:\okita\pdf
+	</OutputDirectory>
+	<OutputMode>
+		PDF
+	</OutputMode>
+	<LogLifespan>
+		3
+	</LogLifespan>
+	<FTPServer>
+		<!-- <Host>ftp://auto.lcloud.jp/</Host>
+		<User>F000414000</User>
+		<Password>ngZQ5MTt</Password> -->
+		<Host>ftp://172.16.6.11/</Host>
+		<User>root</User>
+		<Password>password</Password>
+
+	</FTPServer>
+	<Request>
+		<User>000414000</User>
+		<Password>ek3ENj9L</Password>
+		<MailAddress></MailAddress>
+		<Retries></Retries>
+		<RetryInterval></RetryInterval>
+		<Jikan></Jikan>
+		<Quality></Quality>
+		<PaperSize></PaperSize>
+		<Direction></Direction>
+		<FontSize></FontSize>
+		<FontType></FontType>
+
+	</Request>
+</Settings>
