@@ -395,7 +395,8 @@ namespace AutoOrderFax
                                     while (sdr.Read())
                                     {
                                         StreamWriter sw = new StreamWriter(OutputDirectory + @"\" + OrderNo + ".req", false, Encoding.GetEncoding("Shift_JIS"));
-                                        sw.WriteLine("FAXNO=" + sdr["仕入先FAX"].ToString());
+                                        Supplier s = new Supplier(_connectionString, (int)sdr["仕入先コード"]);
+                                        sw.WriteLine("FAXNO=" + s.FAX);
                                         sw.WriteLine("USERID=" + _reqUser);
                                         sw.WriteLine("PASSWORD=" + _reqPassword);
                                         sw.WriteLine("NAME=" + sdr["仕入先名"].ToString() + "_" + sdr["発注表示番号"] + "." + sdr["支店コード"]);
