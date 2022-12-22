@@ -23,7 +23,7 @@ namespace AutoOrderFax
         public string OperatorName { get; set; }
         public string SupplierFax { get; set; }
         public float UnitPrice { get; set; }
-        public string LineNotes { get; set; }
+        public string ClassDivide { get; set; }
         public string LinePrivateNotes { get; set; }
         public string LinePublicNotes { get; set; }
     }

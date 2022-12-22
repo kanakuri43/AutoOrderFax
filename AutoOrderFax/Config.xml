@@ -16,17 +16,19 @@
 		3
 	</LogLifespan>
 	<FTPServer>
-		<!-- <Host>ftp://auto.lcloud.jp/</Host>
-		<User>F000414000</User>
-		<Password>ngZQ5MTt</Password> -->
-		<Host>ftp://172.16.6.11/</Host>
+    <!-- <Host>ftp://auto.lcloud.jp/</Host>
+		<User>F000540000</User>
+		<Password>Bn79PUnY</Password> -->
+		<!-- <Host>ftp://172.16.6.11/</Host>
 		<User>root</User>
-		<Password>password</Password>
-
+		<Password>password</Password> -->
+    <Host>ftp://auto.lcloud.jp/</Host>
+    <User>F000540000</User>
+    <Password>Bn79PUnY</Password>
 	</FTPServer>
 	<Request>
-		<User>000414000</User>
-		<Password>ek3ENj9L</Password>
+		<User>000540000</User>
+		<Password>6eAZyCfk</Password>
 		<MailAddress></MailAddress>
 		<Retries></Retries>
 		<RetryInterval></RetryInterval>

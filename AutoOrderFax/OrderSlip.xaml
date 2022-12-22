@@ -203,7 +203,7 @@
                                                        HorizontalAlignment="Right"
                                                        Text="{Binding ItemCode}" />
                                             <TextBlock Grid.Row="1" 
-                                                       Text="{Binding ClassName}" />
+                                                       Text="{Binding ClassDivide}" />
                                         </Grid>
                                     </Grid>
                                 </DataTemplate>

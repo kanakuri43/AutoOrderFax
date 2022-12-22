@@ -338,14 +338,24 @@ namespace AutoOrderFax
                             // 入ってたら年組付加
                             odm.SchoolYear = (sdr["学年"].ToString() != "0") ? sdr["学年"].ToString() + "年" : "";
                             odm.SchoolClass = (sdr["組"].ToString() != "") ? sdr["組"].ToString() + "組" : "";
+
                             odm.ItemName = sdr["商品名"].ToString() + sdr["規格名"].ToString();
                             odm.ItemCode = sdr["商品コード"].ToString();
                             odm.Qty = float.Parse(sdr["数量"].ToString());
                             odm.ReserveQty = float.Parse(sdr["予備数量"].ToString());
                             odm.TeacherQty = float.Parse(sdr["教師数量"].ToString());
                             odm.UnitPrice = float.Parse(sdr["税抜仕入単価"].ToString());
+
+                            var sourceText = "";
+                            for (int i = 1; i <= 8; i++)
+                            {
+                                sourceText += sdr["クラス0" + i.ToString()].ToString();
+                            }
+                            odm.ClassDivide = ClassDivideEncoder.Encode(sdr["クラス分け入力区分"].ToString(), sourceText);
                             odm.LinePrivateNotes = sdr["発注社内明細摘要"].ToString();
                             odm.LinePublicNotes = sdr["発注社外明細摘要"].ToString();
+
+
                             ohm.OrderDetails.Add(odm);
                         }
                     }
