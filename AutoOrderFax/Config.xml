@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Settings>
-	<LogFileDirectory>
-		C:\okita\pdf\Log
-	</LogFileDirectory>
 	<ConnectionString>
     server=172.16.3.212\MSSQLSERVER2019; user id=sa;password=Sapassword1; database=PBS_V40_DATA_TEST;
   </ConnectionString>
-	<OutputDirectory>
-		C:\okita\pdf
-	</OutputDirectory>
 	<OutputMode>
 		PDF
 	</OutputMode>
-	<LogLifespan>
+  <LogRetentionDays>
 		3
-	</LogLifespan>
+	</LogRetentionDays>
+  <Query>
+    SELECT
+     発注伝票番号
+    FROM
+     D発注FAX
+    WHERE
+     送信Mode = 0
+    GROUP BY
+     発注伝票番号
+  </Query>
 	<FTPServer>
     <!-- <Host>ftp://auto.lcloud.jp/</Host>
 		<User>F000540000</User>

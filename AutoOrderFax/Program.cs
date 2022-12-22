@@ -39,17 +39,19 @@ namespace AutoOrderFax
         private static string _direction;           // 
         private static string _fontSize;            // 
         private static string _fontType;            // 
-        //private static string _reportFile;          // 
-        private static string _logLifespan;         // 
+
+        private static string _query;               // 
+        private static string _logRetentionDays;         // 
 
         [STAThread]
         public static void Main(string[] args)
         {
+            string currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
             // 各種設定読み込み
             if (LoadSettings() == false) return;
 
             // ログファイル
-            StreamWriter sw = new StreamWriter(_logFileDirectory + @"\" + DateTime.Now.ToString("yyyyMMdd_HHmmss") + @".log", true, System.Text.Encoding.GetEncoding("Shift_JIS"));
+            StreamWriter sw = new StreamWriter(_logFileDirectory + DateTime.Now.ToString("yyyyMMdd_HHmmss") + @".log", true, System.Text.Encoding.GetEncoding("Shift_JIS"));
             Console.SetOut(sw); // 出力先を設定
             Console.WriteLine(@"Output Path... " + _outputDirectory);
             Console.WriteLine(@"Output Mode... " + _outputMode);
@@ -60,10 +62,6 @@ namespace AutoOrderFax
                 ConnectDatabase();
                 if (CreateFiles(GetOrderNoList()))
                 {
-                    //Process ps = new Process();
-                    //ps.StartInfo.FileName = @"C:\okita\pdf\test.pdf";
-                    //ps.Start();
-
                     // PDFファイルが作成されたら転送
                     CleanRemoteFiles();
                     TransferFiles();
@@ -89,11 +87,12 @@ namespace AutoOrderFax
             string currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
             XElement xml = XElement.Load(currentDirectory + "Config.xml");
             //_reportFile = xml.Element("ReportFile").Value.Trim();
-            _logFileDirectory = xml.Element("LogFileDirectory").Value.Trim();
+            _logFileDirectory = currentDirectory + @"log\";
             _connectionString = xml.Element("ConnectionString").Value.Trim();
-            _outputDirectory = xml.Element("OutputDirectory").Value.Trim();
+            _outputDirectory = currentDirectory + @"pdf\";
             _outputMode = xml.Element("OutputMode").Value.Trim();
-            _logLifespan = xml.Element("LogLifespan").Value.Trim();
+            _logRetentionDays = xml.Element("LogRetentionDays").Value.Trim();
+            _query = xml.Element("Query").Value;    // 発注データ取得クエリ
 
             var ftp = (from f in xml.Elements("FTPServer") select f).First();
             _ftpHostName = ftp.Element("Host").Value;
@@ -137,15 +136,7 @@ namespace AutoOrderFax
         private static List<string> GetOrderNoList()
         {
             var res = new List<string>();
-            string sql = "SELECT "
-                        + "  発注伝票番号 "
-                        + "FROM "
-                        + "  D発注FAX "
-                        + "WHERE "
-                        + "  送信Mode = 0 "
-                        + "GROUP BY "
-                        + "  発注伝票番号 ";
-            using (SqlCommand command = new SqlCommand(sql, Connection))
+            using (SqlCommand command = new SqlCommand(_query, Connection))
             {
                 using (SqlDataReader sdr = command.ExecuteReader())
                 {
@@ -477,7 +468,7 @@ namespace AutoOrderFax
             foreach (FileInfo fi in di.GetFiles())
             {
                 // 日付の比較
-                if (fi.LastWriteTime < DateTime.Today.AddDays(int.Parse(_logLifespan) * -1))
+                if (fi.LastWriteTime < DateTime.Today.AddDays(int.Parse(_logRetentionDays) * -1))
                 {
                     fi.Delete();
                     count++;
