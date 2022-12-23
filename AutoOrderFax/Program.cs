@@ -72,11 +72,11 @@ namespace AutoOrderFax
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.ToString());
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + e.ToString());
             }
             finally
             {
-                Console.WriteLine(@"Bye.");
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Bye.");
                 sw.Dispose();
             }
 
@@ -125,10 +125,10 @@ namespace AutoOrderFax
         private static bool ConnectDatabase()
         {
             Connection = new SqlConnection(_connectionString);
-            Console.WriteLine(@"Connecting to " + Connection.DataSource + @"...");
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Connecting to " + Connection.DataSource + @"...");
             Connection.Open();
-            Console.WriteLine(@"OK");
-            Console.WriteLine(@"");
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"");
 
             return true;
         }
@@ -144,7 +144,7 @@ namespace AutoOrderFax
                     {
                         res = (from IDataRecord r in sdr select r["発注伝票番号"].ToString()).ToList();
                     }
-                    Console.WriteLine(res.Count + @" Order(s) found.");
+                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + res.Count + @" Order(s) found.");
                 }
             }
             return (res);
@@ -160,10 +160,10 @@ namespace AutoOrderFax
             {
                 CreateOrderSlip(_outputDirectory, orderNo, _outputMode);
 
-                Console.WriteLine(@"Order No. " + orderNo + @" created.");
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Order No. " + orderNo + @" created.");
                 UpdateOrderState(orderNo);
             }
-            Console.WriteLine(@"Create PDF, Request Files complete.");
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Create PDF, Request Files complete.");
 
             return true;
         }
@@ -171,7 +171,7 @@ namespace AutoOrderFax
         private static void CleanRemoteFiles()
         {
             // リモートのフォルダの中 全削除
-            Console.WriteLine(@"Cleaning remote debris...");
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Cleaning remote debris...");
             using (var fc = new FtpClient(_ftpHostName, _ftpUser, _ftpPassword))
             {
                 fc.Connect();
@@ -188,7 +188,7 @@ namespace AutoOrderFax
                     fc.DeleteFile(@"exclusive.lock");
                 }
             }
-            Console.WriteLine(@"OK");
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
 
         }
 
@@ -198,60 +198,60 @@ namespace AutoOrderFax
 
             // ローカルにlock作成
             File.WriteAllText(_outputDirectory + @"\exclusive.lock", "");
-            Console.WriteLine(@"exclusive.lock created.");
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"exclusive.lock created.");
 
             using (WebClient wc = new WebClient())
             {
                 wc.Credentials = new NetworkCredential(_ftpUser, _ftpPassword);
 
                 // リモートにlock転送
-                Console.WriteLine(@"Transfering exclusive.lock ...");
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfering exclusive.lock ...");
                 wc.UploadFile(string.Format("{0}/{1}", _ftpHostName, "exclusive.lock"), _outputDirectory + @"\exclusive.lock");   // ファイルアップロード.
-                Console.WriteLine(@"OK");
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
 
                 // FTPファイル転送
                 FileList = Directory.GetFiles(_outputDirectory, "*.pdf", System.IO.SearchOption.AllDirectories);
                 if (FileList.Length > 0)
                 {
-                    Console.WriteLine(@"Transfer PDF Start.");
+                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer PDF Start.");
                     foreach (string FilePath in FileList)
                     {
                         string FileName = System.IO.Path.GetFileName(FilePath);                 // ファイル名取得.
                         wc.UploadFile(string.Format("{0}/{1}", _ftpHostName, FileName), FilePath);   // ファイルアップロード.
 
-                        Console.WriteLine(FileName + @" transferd.");
+                        Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + FileName + @" transferd.");
                     }
-                    Console.WriteLine(@"Transfer PDF complete.");
+                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer PDF complete.");
                 }
 
                 // Requestファイル転送
                 FileList = Directory.GetFiles(_outputDirectory, "*.req", System.IO.SearchOption.AllDirectories);
                 if (FileList.Length > 0)
                 {
-                    Console.WriteLine(@"Transfer Request Start.");
+                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer Request Start.");
                     foreach (string FilePath in FileList)
                     {
                         string FileName = System.IO.Path.GetFileName(FilePath);                 // ファイル名取得.
                         wc.UploadFile(string.Format("{0}/{1}", _ftpHostName, FileName), FilePath);   // ファイルアップロード.
 
-                        Console.WriteLine(FileName + @" transferd.");
+                        Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + FileName + @" transferd.");
                     }
-                    Console.WriteLine(@"Transfer Request complete.");
+                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer Request complete.");
                 }
 
                 // リモートのlock削除
-                Console.WriteLine(@"Deleting remote exclusive.lock ...");
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Deleting remote exclusive.lock ...");
                 using (var fc = new FtpClient(_ftpHostName, _ftpUser, _ftpPassword))
                 {
                     fc.Connect();
                     if (fc.FileExists(@"exclusive.lock"))
                     {
                         fc.DeleteFile(@"exclusive.lock");
-                        Console.WriteLine(@"OK");
+                        Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
                     }
                     else
                     {
-                        Console.WriteLine(@"Not Found.");
+                        Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Not Found.");
                     }
                 }
             }
@@ -434,7 +434,7 @@ namespace AutoOrderFax
         }
         private static void UpdateOrderState(string OrderNo)
         {
-            Console.WriteLine(@"Updating order state...");
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Updating order state...");
             string sql = "UPDATE D発注FAX "
                         + "SET "
                         + " 送信Mode = 1 "
@@ -447,18 +447,18 @@ namespace AutoOrderFax
             {
                 command.ExecuteNonQuery();
             }
-            Console.WriteLine(@"OK");
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
 
         }
 
         private static void DeleteLocalFiles()
         {
-            Console.WriteLine(@"Deleting local transfered files...");
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Deleting local transfered files...");
             foreach (string pathFrom in System.IO.Directory.EnumerateFiles(_outputDirectory, "*.*"))
             {
                 File.Delete(pathFrom);
             }
-            Console.WriteLine(@"OK");
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
         }
 
         private static void DeleteLogFiles()
@@ -474,7 +474,7 @@ namespace AutoOrderFax
                     count++;
                 }
             }
-            Console.WriteLine(count + @" Log File(s) Deleted.");
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + count + @" Log File(s) Deleted.");
         }
 
     }

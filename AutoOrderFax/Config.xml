@@ -1,47 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Settings>
-	<ConnectionString>
+  <ConnectionString>
     server=172.16.3.212\MSSQLSERVER2019; user id=sa;password=Sapassword1; database=PBS_V40_DATA_TEST;
   </ConnectionString>
-	<OutputMode>
-		PDF
-	</OutputMode>
+  <OutputMode>
+    PDF
+  </OutputMode>
   <LogRetentionDays>
-		3
-	</LogRetentionDays>
+    3
+  </LogRetentionDays>
   <Query>
     SELECT
-     発注伝票番号
+      D.発注伝票番号
     FROM
-     D発注FAX
+      D発注FAX D
+      INNER JOIN M仕入先 M
+        ON D.仕入先コード = M.仕入先コード
+        AND M.削除区分 = 0
+        AND LEN(ISNULL(M.FAX, '')) >= 6
     WHERE
-     送信Mode = 0
+      D.送信Mode = 0
     GROUP BY
-     発注伝票番号
+      D.発注伝票番号
   </Query>
-	<FTPServer>
-    <!-- <Host>ftp://auto.lcloud.jp/</Host>
+  <FTPServer>
+    <!-- actual 
+    <Host>ftp://auto.lcloud.jp/</Host>
 		<User>F000540000</User>
-		<Password>Bn79PUnY</Password> -->
-		<!-- <Host>ftp://172.16.6.11/</Host>
+		<Password>Bn79PUnY</Password> 
+    -->
+    <!-- test
+    <Host>ftp://172.16.6.11/</Host>
 		<User>root</User>
-		<Password>password</Password> -->
+		<Password>password</Password> 
+    -->
     <Host>ftp://auto.lcloud.jp/</Host>
     <User>F000540000</User>
     <Password>Bn79PUnY</Password>
-	</FTPServer>
-	<Request>
-		<User>000540000</User>
-		<Password>6eAZyCfk</Password>
-		<MailAddress></MailAddress>
-		<Retries></Retries>
-		<RetryInterval></RetryInterval>
-		<Jikan></Jikan>
-		<Quality></Quality>
-		<PaperSize></PaperSize>
-		<Direction></Direction>
-		<FontSize></FontSize>
-		<FontType></FontType>
+  </FTPServer>
+  <Request>
+    <User>000540000</User>
+    <Password>6eAZyCfk</Password>
+    <MailAddress></MailAddress>
+    <Retries></Retries>
+    <RetryInterval></RetryInterval>
+    <Jikan></Jikan>
+    <Quality></Quality>
+    <PaperSize></PaperSize>
+    <Direction></Direction>
+    <FontSize></FontSize>
+    <FontType></FontType>
 
-	</Request>
+  </Request>
 </Settings>
