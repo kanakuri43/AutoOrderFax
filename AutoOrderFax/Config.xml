@@ -9,6 +9,9 @@
   <LogRetentionDays>
     3
   </LogRetentionDays>
+  <LineCount>
+    10
+  </LineCount>
   <Query>
     SELECT
       D.発注伝票番号
@@ -34,9 +37,9 @@
 		<User>root</User>
 		<Password>password</Password> 
     -->
-    <Host>ftp://auto.lcloud.jp/</Host>
-    <User>F000540000</User>
-    <Password>Bn79PUnY</Password>
+    <Host>ftp://172.16.6.11/</Host>
+		<User>root</User>
+		<Password>password</Password> 
   </FTPServer>
   <Request>
     <User>000540000</User>

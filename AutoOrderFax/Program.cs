@@ -28,18 +28,19 @@ namespace AutoOrderFax
         private static string _ftpHostName;
         private static string _ftpUser;             // FTPサーバ UserID
         private static string _ftpPassword;         // FTPサーバ Password
-        private static string _reqUser;             // サービス UserID
-        private static string _reqPassword;         // サービス Password
-        private static string _mailAddress;         // 通知返信先アドレス
-        private static string _retries;             // リトライ回数
-        private static string _retryInterval;       // リトライ間隔（分）
-        private static string _jikan;               // 時間指定（yyyymmddHHMM）
-        private static string _quality;             // 
-        private static string _paperSize;           // 
-        private static string _direction;           // 
-        private static string _fontSize;            // 
-        private static string _fontType;            // 
-
+        //private static string _reqUser;             // サービス UserID
+        //private static string _reqPassword;         // サービス Password
+        //private static string _mailAddress;         // 通知返信先アドレス
+        //private static string _retries;             // リトライ回数
+        //private static string _retryInterval;       // リトライ間隔（分）
+        //private static string _jikan;               // 時間指定（yyyymmddHHMM）
+        //private static string _quality;             // 
+        //private static string _paperSize;           // 
+        //private static string _direction;           // 
+        //private static string _fontSize;            // 
+        //private static string _fontType;            // 
+        private static RequestContents _rc;
+        private static string _lineCount;               // 
         private static string _query;               // 
         private static string _logRetentionDays;         // 
 
@@ -86,12 +87,12 @@ namespace AutoOrderFax
         {
             string currentDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
             XElement xml = XElement.Load(currentDirectory + "Config.xml");
-            //_reportFile = xml.Element("ReportFile").Value.Trim();
             _logFileDirectory = currentDirectory + @"log\";
             _connectionString = xml.Element("ConnectionString").Value.Trim();
             _outputDirectory = currentDirectory + @"pdf\";
             _outputMode = xml.Element("OutputMode").Value.Trim();
             _logRetentionDays = xml.Element("LogRetentionDays").Value.Trim();
+            _lineCount = xml.Element("LineCount").Value;    
             _query = xml.Element("Query").Value;    // 発注データ取得クエリ
 
             var ftp = (from f in xml.Elements("FTPServer") select f).First();
@@ -100,17 +101,18 @@ namespace AutoOrderFax
             _ftpPassword = ftp.Element("Password").Value;
 
             var req = (from f in xml.Elements("Request") select f).First();
-            _reqUser = req.Element("User").Value;
-            _reqPassword = req.Element("Password").Value;
-            _mailAddress = req.Element("MailAddress").Value;
-            _retries = req.Element("Retries").Value;
-            _retryInterval = req.Element("RetryInterval").Value;
-            _jikan = req.Element("Jikan").Value;
-            _quality = req.Element("Quality").Value;
-            _paperSize = req.Element("PaperSize").Value;
-            _direction = req.Element("Direction").Value;
-            _fontSize = req.Element("FontSize").Value;
-            _fontType = req.Element("FontType").Value;
+            _rc = new RequestContents();
+            _rc.ReqUser = req.Element("User").Value;
+            _rc.ReqPassword = req.Element("Password").Value;
+            _rc.MailAddress = req.Element("MailAddress").Value;
+            _rc.Retries = req.Element("Retries").Value;
+            _rc.RetryInterval = req.Element("RetryInterval").Value;
+            _rc.Jikan = req.Element("Jikan").Value;
+            _rc.Quality = req.Element("Quality").Value;
+            _rc.PaperSize = req.Element("PaperSize").Value;
+            _rc.Direction = req.Element("Direction").Value;
+            _rc.FontSize = req.Element("FontSize").Value;
+            _rc.FontType = req.Element("FontType").Value;
 
             // ログ出力先設定
             if (Directory.Exists(_logFileDirectory) == false)
@@ -209,7 +211,7 @@ namespace AutoOrderFax
                 wc.UploadFile(string.Format("{0}/{1}", _ftpHostName, "exclusive.lock"), _outputDirectory + @"\exclusive.lock");   // ファイルアップロード.
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
 
-                // FTPファイル転送
+                // PDFファイル転送
                 FileList = Directory.GetFiles(_outputDirectory, "*.pdf", System.IO.SearchOption.AllDirectories);
                 if (FileList.Length > 0)
                 {
@@ -346,7 +348,6 @@ namespace AutoOrderFax
                             odm.LinePrivateNotes = sdr["発注社内明細摘要"].ToString();
                             odm.LinePublicNotes = sdr["発注社外明細摘要"].ToString();
 
-
                             ohm.OrderDetails.Add(odm);
                         }
                     }
@@ -357,67 +358,12 @@ namespace AutoOrderFax
             {
                 case "PDF":
                     {
-                        // PDFファイル作成
-                        OrderSlip orderSlip = new OrderSlip();
-                        orderSlip.DataContext = ohm;
-                        System.Windows.Documents.FixedPage fixedPage = new System.Windows.Documents.FixedPage();
-                        fixedPage.Children.Add(orderSlip);
-
-                        // A4よこ
-                        fixedPage.Width = 11.69 * 96;
-                        fixedPage.Height = 8.27 * 96;
-                        PageContent pc = new PageContent();
-                        ((IAddChild)pc).AddChild(fixedPage);
-                        FixedDocument fixedDocument = new FixedDocument();
-                        fixedDocument.Pages.Add(pc);
-
-                        using (Package p = Package.Open(OutputDirectory + @"/" + OrderNo.ToString() + @".xps", FileMode.Create))
-
-                        {
-                            using (XpsDocument d = new XpsDocument(p))
-                            {
-                                XpsDocumentWriter writer = XpsDocument.CreateXpsDocumentWriter(d);
-                                writer.Write(fixedDocument.DocumentPaginator);
-                            }
-                        }
-
-                        PdfSharp.Xps.XpsConverter.Convert(OutputDirectory + @"/" + OrderNo.ToString() + @".xps", OutputDirectory + @"/" + OrderNo.ToString() + @".pdf", 0);
-                        File.Delete(OutputDirectory + @"/" + OrderNo.ToString() + @".xps");
-
-
-
-                        // リクエストファイル作成
-                        using (SqlCommand command = new SqlCommand(sql, Connection))
-                        {
-                            using (SqlDataReader sdr = command.ExecuteReader())
-                            {
-                                if (sdr.HasRows)
-                                {
-                                    while (sdr.Read())
-                                    {
-                                        StreamWriter sw = new StreamWriter(OutputDirectory + @"\" + OrderNo + ".req", false, Encoding.GetEncoding("Shift_JIS"));
-                                        Supplier s = new Supplier(_connectionString, (int)sdr["仕入先コード"]);
-                                        sw.WriteLine("FAXNO=" + s.FAX);
-                                        sw.WriteLine("USERID=" + _reqUser);
-                                        sw.WriteLine("PASSWORD=" + _reqPassword);
-                                        sw.WriteLine("NAME=" + sdr["仕入先名"].ToString() + "_" + sdr["発注表示番号"] + "." + sdr["支店コード"]);
-                                        sw.WriteLine("SCODE1=");
-                                        sw.WriteLine("SCODE2=");
-                                        sw.WriteLine("SCODE3=");
-                                        sw.WriteLine("RETMAIL=" + _mailAddress);
-                                        sw.WriteLine("RETRY=" + _retries);
-                                        sw.WriteLine("RTRYINTERVAL=" + _retryInterval);
-                                        sw.WriteLine("JIKAN=" + _jikan);
-                                        sw.WriteLine("QUALITY=" + _quality);
-                                        sw.WriteLine("PAPERSIZE=" + _paperSize);
-                                        sw.WriteLine("DIRECTION=" + _direction);
-                                        sw.WriteLine("FONTSIZE=" + _fontSize);
-                                        sw.WriteLine("FONTTYPE=" + _fontType);
-                                        sw.Close();
-                                    }
-                                }
-                            }
-                        }
+                        var pf = new PdfCreator(OrderNo);
+                        pf.RequestContents = _rc;
+                        pf.sql = sql;
+                        pf.ConnectionString = _connectionString;
+                        pf.ohm = ohm;
+                        pf.Create(OutputDirectory);
 
                         break;
                     }
