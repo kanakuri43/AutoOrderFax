@@ -32,6 +32,7 @@ namespace AutoOrderFax
         public void Create(string OutputDirectory)
         {
             OrderSlip orderSlip = new OrderSlip();
+
             orderSlip.DataContext = ohm;
             System.Windows.Documents.FixedPage fixedPage = new System.Windows.Documents.FixedPage();
             fixedPage.Children.Add(orderSlip);

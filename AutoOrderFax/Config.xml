@@ -27,10 +27,15 @@
       D.発注伝票番号
   </Query>
   <FTPServer>
-    <!-- actual 
+    <!-- primary
     <Host>ftp://auto.lcloud.jp/</Host>
 		<User>F000540000</User>
 		<Password>Bn79PUnY</Password> 
+    -->
+    <!-- secondary
+    <Host>ftp://auto.lcloud.jp/</Host>
+		<User>F000540001</User>
+		<Password>J9rtb6UR</Password> 
     -->
     <!-- test
     <Host>ftp://172.16.6.11/</Host>
@@ -38,12 +43,12 @@
 		<Password>password</Password> 
     -->
     <Host>ftp://172.16.6.11/</Host>
-		<User>root</User>
-		<Password>password</Password> 
+    <User>root</User>
+    <Password>password</Password>
   </FTPServer>
   <Request>
-    <User>000540000</User>
-    <Password>6eAZyCfk</Password>
+    <User>000540001</User>
+    <Password>Wx8vncXR</Password>
     <MailAddress></MailAddress>
     <Retries></Retries>
     <RetryInterval></RetryInterval>

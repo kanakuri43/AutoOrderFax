@@ -262,6 +262,7 @@ namespace AutoOrderFax
         private static void CreateOrderSlip(string OutputDirectory, string OrderNo, string OutputMode)
         {
             OrderHeaderModel ohm = new OrderHeaderModel();
+            DataTable FullDataTable ;
 
             string sql = "PD発注_注文書 " + OrderNo.ToString();
             using (SqlCommand command = new SqlCommand(sql, Connection))
@@ -270,6 +271,19 @@ namespace AutoOrderFax
                 {
                     if (sdr.HasRows)
                     {
+                        // ストアドの結果をLINQで1ページ分抽出するために、DataTaableに変換
+                        //FullDataTable = new DataTable();
+                        //FullDataTable.Load(sdr);
+                        //1ページ分のDataTable作成
+                        //var PageDataTable ;
+
+
+                        // PDF出力の準備
+                        var pf = new PdfCreator(OrderNo);
+                        pf.RequestContents = _rc;
+                        pf.sql = sql;
+                        pf.ConnectionString = _connectionString;
+
                         while (sdr.Read())
                         {
                             if ((Int16)sdr["発注行番号"] == 1)
@@ -349,10 +363,16 @@ namespace AutoOrderFax
                             odm.LinePublicNotes = sdr["発注社外明細摘要"].ToString();
 
                             ohm.OrderDetails.Add(odm);
+
+ 
                         }
+                        // PDF出力
+                        pf.ohm = ohm;
+                        pf.Create(OutputDirectory);
                     }
                 }
             }
+            return;
 
             switch (OutputMode)
             {
