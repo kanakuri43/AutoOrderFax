@@ -13,6 +13,9 @@ using System.Windows.Markup;
 using System.IO.Packaging;
 using System.Windows.Xps.Packaging;
 using System.Windows.Xps;
+using FluentFTP.Proxy;
+using FluentFTP.Proxy.AsyncProxy;
+using FluentFTP.Proxy.SyncProxy;
 
 namespace AutoOrderFax
 {
