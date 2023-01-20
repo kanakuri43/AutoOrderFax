@@ -28,17 +28,7 @@ namespace AutoOrderFax
         private static string _ftpHostName;
         private static string _ftpUser;             // FTPサーバ UserID
         private static string _ftpPassword;         // FTPサーバ Password
-        //private static string _reqUser;             // サービス UserID
-        //private static string _reqPassword;         // サービス Password
-        //private static string _mailAddress;         // 通知返信先アドレス
-        //private static string _retries;             // リトライ回数
-        //private static string _retryInterval;       // リトライ間隔（分）
-        //private static string _jikan;               // 時間指定（yyyymmddHHMM）
-        //private static string _quality;             // 
-        //private static string _paperSize;           // 
-        //private static string _direction;           // 
-        //private static string _fontSize;            // 
-        //private static string _fontType;            // 
+
         private static RequestContents _rc;
         private static string _lineCount;               // 
         private static string _query;               // 
@@ -202,13 +192,15 @@ namespace AutoOrderFax
             File.WriteAllText(_outputDirectory + @"\exclusive.lock", "");
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"exclusive.lock created.");
 
-            using (WebClient wc = new WebClient())
+            using (var fc = new FtpClient())
             {
-                wc.Credentials = new NetworkCredential(_ftpUser, _ftpPassword);
+                fc.Host = _ftpHostName;
+                fc.Credentials = new NetworkCredential(_ftpUser, _ftpPassword);
+                fc.Connect();
 
                 // リモートにlock転送
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfering exclusive.lock ...");
-                wc.UploadFile(string.Format("{0}/{1}", _ftpHostName, "exclusive.lock"), _outputDirectory + @"\exclusive.lock");   // ファイルアップロード.
+                fc.UploadFile(_outputDirectory + @"\exclusive.lock", "exclusive.lock");   // ファイルアップロード.
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
 
                 // PDFファイル転送
@@ -218,8 +210,8 @@ namespace AutoOrderFax
                     Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer PDF Start.");
                     foreach (string FilePath in FileList)
                     {
-                        string FileName = System.IO.Path.GetFileName(FilePath);                 // ファイル名取得.
-                        wc.UploadFile(string.Format("{0}/{1}", _ftpHostName, FileName), FilePath);   // ファイルアップロード.
+                        string FileName = Path.GetFileName(FilePath);                 // ファイル名取得.
+                        fc.UploadFile(FilePath, FileName);   // ファイルアップロード.
 
                         Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + FileName + @" transferd.");
                     }
@@ -234,7 +226,7 @@ namespace AutoOrderFax
                     foreach (string FilePath in FileList)
                     {
                         string FileName = System.IO.Path.GetFileName(FilePath);                 // ファイル名取得.
-                        wc.UploadFile(string.Format("{0}/{1}", _ftpHostName, FileName), FilePath);   // ファイルアップロード.
+                        fc.UploadFile(FilePath, FileName);   // ファイルアップロード.
 
                         Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + FileName + @" transferd.");
                     }
@@ -243,19 +235,17 @@ namespace AutoOrderFax
 
                 // リモートのlock削除
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Deleting remote exclusive.lock ...");
-                using (var fc = new FtpClient(_ftpHostName, _ftpUser, _ftpPassword))
+                fc.Connect();
+                if (fc.FileExists(@"exclusive.lock"))
                 {
-                    fc.Connect();
-                    if (fc.FileExists(@"exclusive.lock"))
-                    {
-                        fc.DeleteFile(@"exclusive.lock");
-                        Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
-                    }
-                    else
-                    {
-                        Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Not Found.");
-                    }
+                    fc.DeleteFile(@"exclusive.lock");
+                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
                 }
+                else
+                {
+                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Not Found.");
+                }
+
             }
             return true;
         }
