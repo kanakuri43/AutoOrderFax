@@ -46,6 +46,11 @@
     <User>root</User>
     <Password>password</Password>
   </FTPServer>
+  <ProxyServer>
+    <Host>ftp://172.16.6.11/</Host>
+    <User>root</User>
+    <Password>password</Password>
+  </ProxyServer>
   <Request>
     <User>000540001</User>
     <Password>Wx8vncXR</Password>

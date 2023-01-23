@@ -31,6 +31,9 @@ namespace AutoOrderFax
         private static string _ftpHostName;
         private static string _ftpUser;             // FTPサーバ UserID
         private static string _ftpPassword;         // FTPサーバ Password
+        private static string _proxyHostName;
+        private static string _proxyUser;             // Proxyサーバ UserID
+        private static string _proxyPassword;         // Proxyサーバ Password
 
         private static RequestContents _rc;
         private static string _lineCount;               // 
@@ -92,6 +95,11 @@ namespace AutoOrderFax
             _ftpHostName = ftp.Element("Host").Value;
             _ftpUser = ftp.Element("User").Value;
             _ftpPassword = ftp.Element("Password").Value;
+
+            var proxy = (from f in xml.Elements("ProxyServer") select f).First();
+            _proxyHostName = proxy.Element("Host").Value;
+            _proxyUser = proxy.Element("User").Value;
+            _proxyPassword = proxy.Element("Password").Value;
 
             var req = (from f in xml.Elements("Request") select f).First();
             _rc = new RequestContents();
