@@ -39,6 +39,7 @@ namespace AutoOrderFax
         private static string _lineCount;               // 
         private static string _query;               // 
         private static string _logRetentionDays;         // 
+        private static string _fixedNotes;         // 
 
         [STAThread]
         public static void Main(string[] args)
@@ -90,6 +91,7 @@ namespace AutoOrderFax
             _logRetentionDays = xml.Element("LogRetentionDays").Value.Trim();
             _lineCount = xml.Element("LineCount").Value;    
             _query = xml.Element("Query").Value;    // 発注データ取得クエリ
+            _fixedNotes = xml.Element("FixedNotes").Value;    // 発注データ取得クエリ
 
             var ftp = (from f in xml.Elements("FTPServer") select f).First();
             _ftpHostName = ftp.Element("Host").Value;
@@ -322,8 +324,8 @@ namespace AutoOrderFax
 
                                 }
 
-                                ohm.OrderNo = "J" + sdr["発注表示番号"].ToString();
-                                ohm.OrderDate = DateTime.ParseExact(sdr["発注伝票日付"].ToString(), "yyyyMMdd", null).ToString("yyyy年 MM月 dd日");
+                                ohm.OrderNo = "J" + sdr["受注表示番号"].ToString();
+                                ohm.OrderDate = DateTime.ParseExact(sdr["発注伝票日付"].ToString(), "yyyyMMdd", null).ToString("yyyy年 M月 d日");
                                 ohm.PrivateNotes = sdr["発注社内伝票摘要"].ToString();
                                 ohm.PublicNotes = sdr["発注社外伝票摘要"].ToString();
                                 ohm.SelfZipCode = sdr["支店郵便番号"].ToString();
@@ -333,8 +335,10 @@ namespace AutoOrderFax
                                 ohm.SelfDepartmentName = sdr["支店名称"].ToString();
                                 ohm.SelfTel = sdr["支店TEL"].ToString();
                                 ohm.SelfFax = sdr["支店FAX"].ToString();
-                                ohm.ShippingDate = sdr["出荷日付"].ToString();
+                                //ohm.ShippingDate = sdr["出荷日付"].ToString();
+                                ohm.ShippingDate = ((int)sdr["出荷日付"] == 0) ? "" : String.Format("出荷日付：{0}", DateTime.ParseExact(sdr["出荷日付"].ToString(), "yyyyMMdd", null).ToString("yyyy/MM/dd"));
                                 ohm.OrderNoTimeStamp = "No.H" + sdr["発注伝票番号"].ToString() + "-" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                                ohm.FixedNotes =  _fixedNotes.Trim();
                             }
 
                             OrderDetailModel odm = new OrderDetailModel();

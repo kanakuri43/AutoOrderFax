@@ -29,6 +29,7 @@ namespace AutoOrderFax
         public string SelfFax{ get; set; }
         public string ShippingDate { get; set; }
         public string OrderNoTimeStamp { get; set; }
+        public string FixedNotes { get; set; }
 
         public List<OrderDetailModel> OrderDetails { get; set; } = new List<OrderDetailModel>();
     }
