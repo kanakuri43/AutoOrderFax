@@ -29,17 +29,19 @@ namespace AutoOrderFax
         private static string _outputDirectory;
         private static string _outputMode;
         private static string _ftpHostName;
-        private static string _ftpUser;             // FTPサーバ UserID
-        private static string _ftpPassword;         // FTPサーバ Password
+        private static string _ftpPort;             
+        private static string _ftpUser;            
+        private static string _ftpPassword;        
         private static string _proxyHostName;
-        private static string _proxyUser;             // Proxyサーバ UserID
-        private static string _proxyPassword;         // Proxyサーバ Password
+        private static string _proxyPort;            
+        private static string _proxyUser;           
+        private static string _proxyPassword;    
 
         private static RequestContents _rc;
-        private static string _lineCount;               // 
-        private static string _query;               // 
-        private static string _logRetentionDays;         // 
-        private static string _fixedNotes;         // 
+        private static string _lineCount;              
+        private static string _query;               
+        private static string _logRetentionDays;     
+        private static string _fixedNotes;          
 
         [STAThread]
         public static void Main(string[] args)
@@ -61,12 +63,26 @@ namespace AutoOrderFax
                 if (CreateFiles(GetOrderNoList()))
                 {
                     // PDFファイルが作成されたら転送
-                    CleanRemoteFiles();
-                    TransferFiles();
+
+                    // create an FTP client connecting through a HTTP 1.1 Proxy
+                    var fc = new FtpClientHttp11Proxy(new FtpProxyProfile()
+                    {
+                        ProxyHost = _proxyHostName,
+                        ProxyPort = int.Parse(_proxyPort),
+                        //ProxyCredentials = new NetworkCredential(_proxyUser, _proxyPassword),
+                        FtpHost = _ftpHostName,
+                        FtpPort = int.Parse(_ftpPort),
+                        FtpCredentials = new NetworkCredential(_ftpUser, _ftpPassword),
+                    });
+                    fc.Connect();
+
+                    CleanRemoteFiles(fc);
+                    TransferFiles(fc);
+                    fc.Disconnect();
+
                     DeleteLocalFiles();
                 }
                 DeleteLogFiles();
-
             }
             catch (Exception e)
             {
@@ -77,7 +93,6 @@ namespace AutoOrderFax
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Bye.");
                 sw.Dispose();
             }
-
         }
 
         private static bool LoadSettings()
@@ -95,11 +110,13 @@ namespace AutoOrderFax
 
             var ftp = (from f in xml.Elements("FTPServer") select f).First();
             _ftpHostName = ftp.Element("Host").Value;
+            _ftpPort = ftp.Element("Port").Value;
             _ftpUser = ftp.Element("User").Value;
             _ftpPassword = ftp.Element("Password").Value;
 
             var proxy = (from f in xml.Elements("ProxyServer") select f).First();
             _proxyHostName = proxy.Element("Host").Value;
+            _proxyPort = proxy.Element("Port").Value;
             _proxyUser = proxy.Element("User").Value;
             _proxyPassword = proxy.Element("Password").Value;
 
@@ -173,31 +190,29 @@ namespace AutoOrderFax
             return true;
         }
 
-        private static void CleanRemoteFiles()
+        private static void CleanRemoteFiles(FtpClientHttp11Proxy fc)
         {
-            // リモートのフォルダの中 全削除
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Cleaning remote debris...");
-            using (var fc = new FtpClient(_ftpHostName, _ftpUser, _ftpPassword))
+
+            // リモートのlock以外を先に全削除
+            foreach (FtpListItem item in fc.GetListing("", FtpListOption.Recursive))
             {
-                fc.Connect();
-                foreach (FtpListItem item in fc.GetListing("", FtpListOption.Recursive))
+                if (item.FullName.IndexOf(@"exclusive.lock") < 0)
                 {
-                    if (item.FullName.IndexOf(@"exclusive.lock") < 0)
-                    {
-                        fc.DeleteFile(item.Name);
-                    }
+                    fc.DeleteFile(item.Name);
                 }
-                // リモートのlock削除
-                if (fc.FileExists(@"exclusive.lock"))
-                {
-                    fc.DeleteFile(@"exclusive.lock");
-                }
+            }
+
+            // リモートのlock削除
+            if (fc.FileExists(@"exclusive.lock"))
+            {
+                fc.DeleteFile(@"exclusive.lock");
             }
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
 
         }
 
-        private static bool TransferFiles()
+        private static bool TransferFiles(FtpClientHttp11Proxy fc)
         {
             string[] FileList;
 
@@ -205,61 +220,55 @@ namespace AutoOrderFax
             File.WriteAllText(_outputDirectory + @"\exclusive.lock", "");
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"exclusive.lock created.");
 
-            using (var fc = new FtpClient())
+            // リモートにlock転送
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfering exclusive.lock ...");
+            fc.UploadFile(_outputDirectory + @"\exclusive.lock", "exclusive.lock");   // ファイルアップロード.
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
+
+            // PDFファイル転送
+            FileList = Directory.GetFiles(_outputDirectory, "*.pdf", System.IO.SearchOption.AllDirectories);
+            if (FileList.Length > 0)
             {
-                fc.Host = _ftpHostName;
-                fc.Credentials = new NetworkCredential(_ftpUser, _ftpPassword);
-                fc.Connect();
-
-                // リモートにlock転送
-                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfering exclusive.lock ...");
-                fc.UploadFile(_outputDirectory + @"\exclusive.lock", "exclusive.lock");   // ファイルアップロード.
-                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
-
-                // PDFファイル転送
-                FileList = Directory.GetFiles(_outputDirectory, "*.pdf", System.IO.SearchOption.AllDirectories);
-                if (FileList.Length > 0)
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer PDF Start.");
+                foreach (string FilePath in FileList)
                 {
-                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer PDF Start.");
-                    foreach (string FilePath in FileList)
-                    {
-                        string FileName = Path.GetFileName(FilePath);                 // ファイル名取得.
-                        fc.UploadFile(FilePath, FileName);   // ファイルアップロード.
+                    string FileName = Path.GetFileName(FilePath);                 // ファイル名取得.
+                    fc.UploadFile(FilePath, FileName);   // ファイルアップロード.
 
-                        Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + FileName + @" transferd.");
-                    }
-                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer PDF complete.");
+                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + FileName + @" transferd.");
                 }
-
-                // Requestファイル転送
-                FileList = Directory.GetFiles(_outputDirectory, "*.req", System.IO.SearchOption.AllDirectories);
-                if (FileList.Length > 0)
-                {
-                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer Request Start.");
-                    foreach (string FilePath in FileList)
-                    {
-                        string FileName = System.IO.Path.GetFileName(FilePath);                 // ファイル名取得.
-                        fc.UploadFile(FilePath, FileName);   // ファイルアップロード.
-
-                        Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + FileName + @" transferd.");
-                    }
-                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer Request complete.");
-                }
-
-                // リモートのlock削除
-                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Deleting remote exclusive.lock ...");
-                fc.Connect();
-                if (fc.FileExists(@"exclusive.lock"))
-                {
-                    fc.DeleteFile(@"exclusive.lock");
-                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
-                }
-                else
-                {
-                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Not Found.");
-                }
-
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer PDF complete.");
             }
+
+            // Requestファイル転送
+            FileList = Directory.GetFiles(_outputDirectory, "*.req", System.IO.SearchOption.AllDirectories);
+            if (FileList.Length > 0)
+            {
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer Request Start.");
+                foreach (string FilePath in FileList)
+                {
+                    string FileName = System.IO.Path.GetFileName(FilePath);                 // ファイル名取得.
+                    fc.UploadFile(FilePath, FileName);   // ファイルアップロード.
+
+                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + FileName + @" transferd.");
+                }
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer Request complete.");
+            }
+
+            // リモートのlock削除
+            Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Deleting remote exclusive.lock ...");
+            fc.Connect();
+            if (fc.FileExists(@"exclusive.lock"))
+            {
+                fc.DeleteFile(@"exclusive.lock");
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
+            }
+            else
+            {
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Not Found.");
+            }
+
+            
             return true;
         }
         private static void CreateOrderSlip(string OutputDirectory, string OrderNo, string OutputMode)
