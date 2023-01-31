@@ -32,14 +32,14 @@
 
   <FTPServer>
     <!-- primary
-    <Host>ftp://auto.lcloud.jp/</Host>
+    <Host>auto.lcloud.jp</Host>
     <Port>21</Port>
 		<User>F000540000</User>
 		<Password>Bn79PUnY</Password> 
     -->
     <!-- secondary
     <Host>auto.lcloud.jp</Host>
-    <Port>21</Port>
+    <Port>22</Port>
 		<User>F000540001</User>
 		<Password>J9rtb6UR</Password> 
     -->

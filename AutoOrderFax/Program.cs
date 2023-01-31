@@ -16,6 +16,8 @@ using System.Windows.Xps;
 using FluentFTP.Proxy;
 using FluentFTP.Proxy.AsyncProxy;
 using FluentFTP.Proxy.SyncProxy;
+using Renci.SshNet;
+using static System.Net.WebRequestMethods;
 
 namespace AutoOrderFax
 {
@@ -62,20 +64,18 @@ namespace AutoOrderFax
                 ConnectDatabase();
                 if (CreateFiles(GetOrderNoList()))
                 {
-                    // PDFファイルが作成されたら転送
-
                     // create an FTP client connecting through a HTTP 1.1 Proxy
-                    var fc = new FtpClientHttp11Proxy(new FtpProxyProfile()
-                    {
-                        ProxyHost = _proxyHostName,
-                        ProxyPort = int.Parse(_proxyPort),
-                        //ProxyCredentials = new NetworkCredential(_proxyUser, _proxyPassword),
-                        FtpHost = _ftpHostName,
-                        FtpPort = int.Parse(_ftpPort),
-                        FtpCredentials = new NetworkCredential(_ftpUser, _ftpPassword),
-                    });
+                    ConnectionInfo connectionInfo = new ConnectionInfo(_ftpHostName,
+                                                                      int.Parse(_ftpPort),
+                                                                      _ftpUser,
+                                                                      ProxyTypes.Http,
+                                                                      _proxyHostName,
+                                                                      int.Parse(_proxyPort),
+                                                                      _proxyUser,
+                                                                      _proxyPassword,
+                                                                      new PasswordAuthenticationMethod(_ftpUser, _ftpPassword));
+                    SftpClient fc = new SftpClient(connectionInfo);
                     fc.Connect();
-
                     CleanRemoteFiles(fc);
                     TransferFiles(fc);
                     fc.Disconnect();
@@ -190,21 +190,22 @@ namespace AutoOrderFax
             return true;
         }
 
-        private static void CleanRemoteFiles(FtpClientHttp11Proxy fc)
+        private static void CleanRemoteFiles(SftpClient fc)
         {
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Cleaning remote debris...");
 
             // リモートのlock以外を先に全削除
-            foreach (FtpListItem item in fc.GetListing("", FtpListOption.Recursive))
+            //foreach (FtpListItem item in fc.GetListing("", FtpListOption.Recursive))
+            foreach (var ftpfile in fc.ListDirectory("."))
             {
-                if (item.FullName.IndexOf(@"exclusive.lock") < 0)
+                if (ftpfile.FullName.IndexOf(@"exclusive.lock") < 0)
                 {
-                    fc.DeleteFile(item.Name);
+                    fc.DeleteFile(ftpfile.Name);
                 }
             }
 
             // リモートのlock削除
-            if (fc.FileExists(@"exclusive.lock"))
+            if (fc.Exists(@"exclusive.lock"))
             {
                 fc.DeleteFile(@"exclusive.lock");
             }
@@ -212,17 +213,20 @@ namespace AutoOrderFax
 
         }
 
-        private static bool TransferFiles(FtpClientHttp11Proxy fc)
+        private static bool TransferFiles(SftpClient client)
         {
             string[] FileList;
+            Stream stream;
 
             // ローカルにlock作成
-            File.WriteAllText(_outputDirectory + @"\exclusive.lock", "");
+            System.IO.File.WriteAllText(_outputDirectory + @"\exclusive.lock", "");
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"exclusive.lock created.");
 
             // リモートにlock転送
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfering exclusive.lock ...");
-            fc.UploadFile(_outputDirectory + @"\exclusive.lock", "exclusive.lock");   // ファイルアップロード.
+            stream = System.IO.File.OpenRead(_outputDirectory + @"\exclusive.lock");
+            client.UploadFile(stream, @"exclusive.lock");
+            stream.Dispose();
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
 
             // PDFファイル転送
@@ -232,9 +236,10 @@ namespace AutoOrderFax
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer PDF Start.");
                 foreach (string FilePath in FileList)
                 {
+                    stream = System.IO.File.OpenRead(FilePath);
                     string FileName = Path.GetFileName(FilePath);                 // ファイル名取得.
-                    fc.UploadFile(FilePath, FileName);   // ファイルアップロード.
-
+                    client.UploadFile(stream, FileName);   // ファイルアップロード.
+                    stream.Dispose();
                     Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + FileName + @" transferd.");
                 }
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer PDF complete.");
@@ -247,9 +252,10 @@ namespace AutoOrderFax
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer Request Start.");
                 foreach (string FilePath in FileList)
                 {
-                    string FileName = System.IO.Path.GetFileName(FilePath);                 // ファイル名取得.
-                    fc.UploadFile(FilePath, FileName);   // ファイルアップロード.
-
+                    stream = System.IO.File.OpenRead(FilePath);
+                    string FileName = Path.GetFileName(FilePath);                 // ファイル名取得.
+                    client.UploadFile(stream, FileName);   // ファイルアップロード.
+                    stream.Dispose();
                     Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + FileName + @" transferd.");
                 }
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Transfer Request complete.");
@@ -257,10 +263,10 @@ namespace AutoOrderFax
 
             // リモートのlock削除
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Deleting remote exclusive.lock ...");
-            fc.Connect();
-            if (fc.FileExists(@"exclusive.lock"))
+            client.Connect();
+            if (client.Exists(@"exclusive.lock"))
             {
-                fc.DeleteFile(@"exclusive.lock");
+                client.DeleteFile(@"exclusive.lock");
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
             }
             else
@@ -436,7 +442,7 @@ namespace AutoOrderFax
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Deleting local transfered files...");
             foreach (string pathFrom in System.IO.Directory.EnumerateFiles(_outputDirectory, "*.*"))
             {
-                File.Delete(pathFrom);
+                System.IO.File.Delete(pathFrom);
             }
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
         }
