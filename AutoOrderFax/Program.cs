@@ -76,7 +76,7 @@ namespace AutoOrderFax
                                                                       new PasswordAuthenticationMethod(_ftpUser, _ftpPassword));
                     SftpClient fc = new SftpClient(connectionInfo);
                     fc.Connect();
-                    CleanRemoteFiles(fc);
+                    // CleanRemoteFiles(fc);
                     TransferFiles(fc);
                     fc.Disconnect();
 
@@ -200,6 +200,7 @@ namespace AutoOrderFax
             {
                 if (ftpfile.FullName.IndexOf(@"exclusive.lock") < 0)
                 {
+                    Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Deleting " + ftpfile);
                     fc.DeleteFile(ftpfile.Name);
                 }
             }
@@ -207,6 +208,7 @@ namespace AutoOrderFax
             // リモートのlock削除
             if (fc.Exists(@"exclusive.lock"))
             {
+                Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Deleting exclusive.lock");
                 fc.DeleteFile(@"exclusive.lock");
             }
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"OK");
@@ -263,7 +265,6 @@ namespace AutoOrderFax
 
             // リモートのlock削除
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Deleting remote exclusive.lock ...");
-            client.Connect();
             if (client.Exists(@"exclusive.lock"))
             {
                 client.DeleteFile(@"exclusive.lock");
