@@ -49,10 +49,10 @@
 		<User>root</User>
 		<Password>password</Password> 
     -->
-    <Host>auto.lcloud.jp</Host>
-    <Port>22</Port>
-    <User>F000540001</User>
-    <Password>J9rtb6UR</Password>
+    <Host>ftp://172.16.6.11/</Host>
+    <Port>21</Port>
+    <User>root</User>
+    <Password>password</Password>
   </FTPServer>
   
   <ProxyServer>
