@@ -39,7 +39,8 @@
                   Height="100">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="60"/>
-                    <ColumnDefinition Width="840"/>
+                    <ColumnDefinition Width="200"/>
+                    <ColumnDefinition Width="640"/>
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
 
@@ -50,7 +51,13 @@
                     <TextBlock Text="{Binding OrderDate, StringFormat=発注日:{0}}"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="2" 
+                <TextBlock Grid.Column="2" 
+                           Text="発注書"
+                           VerticalAlignment="Bottom" 
+                           FontSize="24"
+                           TextAlignment="Center"/>
+
+                <StackPanel Grid.Column="3" 
                             Orientation="Horizontal"
                             VerticalAlignment="Bottom"           
                             >
