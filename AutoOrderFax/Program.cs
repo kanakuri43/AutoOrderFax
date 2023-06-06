@@ -311,7 +311,7 @@ namespace AutoOrderFax
 
                                 ohm.SupplierName = sdr["仕入先名"].ToString();
                                 ohm.CustomerName = sdr["学校名"].ToString();
-                                ohm.OperatorName = sdr["入力者名"].ToString();
+                                ohm.OperatorName = sdr["操作者名"].ToString();
 
                                 switch ((Int16)sdr["納入区分"])
                                 {
