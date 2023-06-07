@@ -61,7 +61,7 @@
                             Orientation="Horizontal"
                             VerticalAlignment="Bottom"           
                             >
-                    <TextBlock Text="{Binding OrderNo, StringFormat=受注No.{0}}"/>
+                    <TextBlock Text="{Binding OrderNo, StringFormat=発注No.{0}}"/>
                 </StackPanel>
             </Grid>
 
