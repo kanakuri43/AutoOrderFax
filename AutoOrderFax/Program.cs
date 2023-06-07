@@ -64,17 +64,29 @@ namespace AutoOrderFax
                 ConnectDatabase();
                 if (CreateFiles(GetOrderNoList()))
                 {
-                    //return;
-                    // create an FTP client connecting through a HTTP 1.1 Proxy
-                    ConnectionInfo connectionInfo = new ConnectionInfo(_ftpHostName,
-                                                                      int.Parse(_ftpPort),
-                                                                      _ftpUser,
-                                                                      ProxyTypes.Http,
-                                                                      _proxyHostName,
-                                                                      int.Parse(_proxyPort),
-                                                                      _proxyUser,
-                                                                      _proxyPassword,
-                                                                      new PasswordAuthenticationMethod(_ftpUser, _ftpPassword));
+                    ConnectionInfo connectionInfo;
+
+                    if (_proxyHostName == "" && _proxyPort == "")
+                    {
+                        // No proxy server.
+                        connectionInfo = new ConnectionInfo(_ftpHostName,
+                                                            int.Parse(_ftpPort),
+                                                            _ftpUser,
+                                                            new PasswordAuthenticationMethod(_ftpUser, _ftpPassword));
+                    }
+                    else
+                    {
+                        // create an FTP client connecting through a HTTP 1.1 Proxy
+                        connectionInfo = new ConnectionInfo(_ftpHostName,
+                                                            int.Parse(_ftpPort),
+                                                            _ftpUser,
+                                                            ProxyTypes.Http,
+                                                            _proxyHostName,
+                                                            int.Parse(_proxyPort),
+                                                            _proxyUser,
+                                                            _proxyPassword,
+                                                            new PasswordAuthenticationMethod(_ftpUser, _ftpPassword));
+                    }
                     SftpClient fc = new SftpClient(connectionInfo);
                     fc.Connect();
                     // CleanRemoteFiles(fc);
