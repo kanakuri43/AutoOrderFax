@@ -263,6 +263,7 @@
             </Grid>
 
             <!-- Footer -->
+            
             <Grid Grid.Row="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="70"/>
@@ -272,10 +273,12 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="2"
-                            Orientation="Vertical">
+                            Orientation="Vertical">                 
+                    <!--
                     <TextBlock Text="{Binding PrivateNotes}"/>
                     <TextBlock Text="{Binding PublicNotes}"/>
                     <TextBlock Text="{Binding FixedNotes}"/>
+                    -->
                 </StackPanel>
 
                 <StackPanel Grid.Column="3"
@@ -285,7 +288,6 @@
                     </StackPanel>
                     <TextBlock Text="{Binding OrderNoTimeStamp}"/>
                 </StackPanel>
-
             </Grid>
         </Grid>
 
