@@ -14,17 +14,17 @@
   </LineCount>
   <Query>
     SELECT
-      D.発注伝票番号
+     D.発注伝票番号
     FROM
-      D発注FAX D
-      INNER JOIN M仕入先 M
-        ON D.仕入先コード = M.仕入先コード
-        AND M.削除区分 = 0
-        AND LEN(ISNULL(M.FAX, '')) >= 6
+     D発注FAX D
+     INNER JOIN M仕入先 M
+      ON D.仕入先コード = M.仕入先コード
+      AND M.削除区分 = 0
+      AND LEN(ISNULL(M.FAX, '')) >= 6
     WHERE
-      D.送信Mode = 0
+     D.送信Mode = 0
     GROUP BY
-      D.発注伝票番号
+     D.発注伝票番号
   </Query>
   <FixedNotes>
     自動FAX

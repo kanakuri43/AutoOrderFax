@@ -386,6 +386,7 @@ namespace AutoOrderFax
                             odm.ReserveQty = float.Parse(sdr["予備数量"].ToString());
                             odm.TeacherQty = float.Parse(sdr["教師数量"].ToString());
                             odm.UnitPrice = float.Parse(sdr["税抜仕入単価"].ToString());
+                            odm.Price = float.Parse(sdr["税抜仕入金額"].ToString());
 
                             var sourceText = "";
                             for (int i = 1; i <= 8; i++)

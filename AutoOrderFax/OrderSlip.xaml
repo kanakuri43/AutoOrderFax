@@ -246,15 +246,25 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Binding="{Binding UnitPrice, StringFormat={}{0:N2}}" 
-                                            Width="98">
-                            <DataGridTextColumn.ElementStyle>
-                                <Style TargetType="{x:Type TextBlock}">
-                                    <Setter Property="HorizontalAlignment" Value="Right" />
-                                </Style>
-                            </DataGridTextColumn.ElementStyle>
+                        <DataGridTemplateColumn Width="98">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Grid.Row="0" 
+                                                   Text="{Binding UnitPrice}" 
+                                                   TextAlignment="Right"/>
+                                        <TextBlock Grid.Row="1" 
+                                                   Text="{Binding Price}" 
+                                                   TextAlignment="Right"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
 
-                        </DataGridTextColumn>
                         <DataGridTextColumn Binding="{Binding LinePrivateNotes}" 
                                             Width="238"/>
 
