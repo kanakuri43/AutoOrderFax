@@ -209,6 +209,7 @@
                                             </Grid.RowDefinitions>
                                             <TextBlock Grid.Row="0" 
                                                        HorizontalAlignment="Right"
+                                                       FontSize="14"
                                                        Text="{Binding ItemCode}" />
                                             <TextBlock Grid.Row="1" 
                                                        Text="{Binding ClassDivide}" />
