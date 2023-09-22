@@ -266,8 +266,25 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTextColumn Binding="{Binding LinePrivateNotes}" 
-                                            Width="238"/>
+                        <!--<DataGridTextColumn Binding="{Binding LinePrivateNotes}" 
+                                            Width="238"/>-->
+                        <DataGridTemplateColumn Width="238">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Grid.Row="0" 
+                                                   Text="{Binding LinePrivateNotes}" />
+                                        <TextBlock Grid.Row="1" 
+                                                   Text="{Binding LinePublicNotes}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
 
                     </DataGrid.Columns>
                 </DataGrid>
@@ -285,11 +302,9 @@
 
                 <StackPanel Grid.Column="2"
                             Orientation="Vertical">                 
-                    <!--
-                    <TextBlock Text="{Binding PrivateNotes}"/>
+                    <TextBlock Text=""/>
                     <TextBlock Text="{Binding PublicNotes}"/>
                     <TextBlock Text="{Binding FixedNotes}"/>
-                    -->
                 </StackPanel>
 
                 <StackPanel Grid.Column="3"
