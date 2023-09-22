@@ -21,6 +21,7 @@
       ON D.仕入先コード = M.仕入先コード
       AND M.削除区分 = 0
       AND LEN(ISNULL(M.FAX, '')) >= 6
+      AND D.発注伝票番号 = 1001305
     WHERE
      D.送信Mode = 0
     GROUP BY

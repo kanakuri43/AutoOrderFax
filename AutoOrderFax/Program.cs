@@ -365,8 +365,8 @@ namespace AutoOrderFax
                                 ohm.SelfTel = sdr["操作者支店TEL"].ToString();
                                 ohm.SelfFax = sdr["操作者支店FAX"].ToString();
                                 //ohm.ShippingDate = sdr["出荷日付"].ToString();
-                                ohm.ShippingDate = ((int)sdr["出荷日付"] == 0) ? "" : String.Format("出荷日付：{0}", DateTime.ParseExact(sdr["出荷日付"].ToString(), "yyyyMMdd", null).ToString("yyyy/MM/dd"));
-                                ohm.OrderNoTimeStamp = "No.J" + sdr["受注表示番号"].ToString() + "-" + DateTime.Now.ToString("yyyyMMddHHmmss");
+                                ohm.ShippingDate = ((int)sdr["出荷日付"] == 0) ? "" : String.Format("納期指定：{0}", DateTime.ParseExact(sdr["出荷日付"].ToString(), "yyyyMMdd", null).ToString("yyyy/MM/dd"));
+                                ohm.OrderNoTimeStamp = "受注No.J" + sdr["受注表示番号"].ToString() + "-" + DateTime.Now.ToString("yyyyMMddHHmmss");
                                 ohm.FixedNotes =  _fixedNotes.Trim();
                             }
 
