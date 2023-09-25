@@ -208,7 +208,6 @@ namespace AutoOrderFax
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Cleaning remote debris...");
 
             // リモートのlock以外を先に全削除
-            //foreach (FtpListItem item in fc.GetListing("", FtpListOption.Recursive))
             foreach (var ftpfile in fc.ListDirectory("."))
             {
                 if (ftpfile.FullName.IndexOf(@"exclusive.lock") < 0)
@@ -293,10 +292,13 @@ namespace AutoOrderFax
         }
         private static void CreateOrderSlip(string OutputDirectory, string OrderNo, string OutputMode)
         {
-            var ohms = new List<OrderHeaderModel>();
-            var ohm = new OrderHeaderModel();
+            // 新しい HeaderModel インスタンスを作成
+            var ohm = new OrderHeaderModel
+            {
+                OrderNo = OrderNo
 
-            DataTable FullDataTable ;
+            }; 
+            var ohms = new List<OrderHeaderModel>();
 
             string sql = "PD発注_注文書 " + OrderNo.ToString();
             using (SqlCommand command = new SqlCommand(sql, Connection))
@@ -305,80 +307,12 @@ namespace AutoOrderFax
                 {
                     if (sdr.HasRows)
                     {
-                        //// ストアドの結果をLINQで1ページ分抽出するために、DataTaableに変換
-                        //FullDataTable = new DataTable();
-                        //FullDataTable.Load(sdr);
-                        ////1ページ分のDataTable作成
-                        //var PageDataTable;
-
-
-                        // PDF出力の準備
-                        var pf = new PdfCreator(OrderNo);
-                        pf.RequestContents = _rc;
-                        pf.sql = sql;
-                        pf.ConnectionString = _connectionString;
 
                         while (sdr.Read())
                         {
                             if ((Int16)sdr["発注行番号"] == 1)
                             {
-                                ohm.SupplierName = sdr["仕入先名"].ToString();
-                                ohm.CustomerName = sdr["学校名"].ToString();
-                                ohm.OperatorName = sdr["操作者名"].ToString();
-
-                                switch ((Int16)sdr["納入区分"])
-                                {
-                                    case 1:
-                                        ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
-                                        ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
-                                        ohm.CustomerTel = sdr["支店TEL"].ToString();
-                                        break;
-                                    case 2:
-                                        Warehouse w = new Warehouse(_connectionString);
-                                        ohm.DeliveryTypeName = w.Name + " 入れ";
-                                        ohm.CustomerAddress = w.Address;
-                                        ohm.CustomerTel = w.Tel;
-                                        break;
-                                    case 4:
-                                        ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
-                                        ohm.CustomerAddress = "";
-                                        ohm.CustomerTel = "";
-                                        break;
-                                    case 5:
-                                        ohm.DeliveryTypeName = "直送";
-                                        ohm.CustomerAddress = sdr["学校住所1"].ToString() + sdr["学校住所2"].ToString();
-                                        ohm.CustomerTel = sdr["学校TEL"].ToString();
-                                        break;
-                                    case 7:
-                                        ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
-                                        ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
-                                        ohm.CustomerTel = sdr["支店TEL"].ToString();
-                                        break;
-                                    case 8:
-                                        ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
-                                        ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
-                                        ohm.CustomerTel = sdr["支店TEL"].ToString();
-                                        break;
-                                    default:
-                                        break;
-
-                                }
-
-                                ohm.OrderNo = "H" + sdr["発注伝票番号"].ToString();
-                                ohm.OrderDate = DateTime.ParseExact(sdr["発注伝票日付"].ToString(), "yyyyMMdd", null).ToString("yyyy年 M月 d日");
-                                ohm.PrivateNotes = sdr["発注社内伝票摘要"].ToString();
-                                ohm.PublicNotes = sdr["発注社外伝票摘要"].ToString();
-                                ohm.SelfZipCode = sdr["操作者支店郵便番号"].ToString();
-                                ohm.SelfAddress = sdr["操作者支店住所1"].ToString() + sdr["操作者支店住所2"].ToString();
-                                CompanyInfo c = new CompanyInfo(_connectionString);
-                                ohm.SelfCompanyName = c.Name;
-                                ohm.SelfDepartmentName = sdr["操作者支店名称"].ToString();
-                                ohm.SelfTel = sdr["操作者支店TEL"].ToString();
-                                ohm.SelfFax = sdr["操作者支店FAX"].ToString();
-                                //ohm.ShippingDate = sdr["出荷日付"].ToString();
-                                ohm.ShippingDate = ((int)sdr["出荷日付"] == 0) ? "" : String.Format("納期指定：{0}", DateTime.ParseExact(sdr["出荷日付"].ToString(), "yyyyMMdd", null).ToString("yyyy/MM/dd"));
-                                ohm.OrderNoTimeStamp = "受注No.J" + sdr["受注表示番号"].ToString() + "-" + DateTime.Now.ToString("yyyyMMddHHmmss");
-                                ohm.FixedNotes =  _fixedNotes.Trim();
+                                Headerinitialize(ohm, sdr);
                             }
 
                             OrderDetailModel odm = new OrderDetailModel();
@@ -409,41 +343,102 @@ namespace AutoOrderFax
                             odm.LinePublicNotes = sdr["発注社外明細摘要"].ToString();
 
                             ohm.OrderDetails.Add(odm); 
+
+                            // ページ行数ごとに1ページ分のデータを確定させる
+                            if (((Int16)sdr["発注行番号"] % int.Parse(_linesPerPage)) == 0)
+                            {
+                                ohms.Add(ohm);
+
+                                // 新しいHeaderModelインスタンスを作成
+                                ohm = new OrderHeaderModel  
+                                {
+                                    OrderNo = OrderNo  
+                                };
+
+                                Headerinitialize(ohm, sdr);
+
+                            }
                         }
-                        ohms.Add(ohm);
+                        if (ohm.OrderDetails.Count() != 0)
+                        {
+                            ohms.Add(ohm);
+                        }
 
                         // PDF出力
-                        pf.ohm = ohm;
+                        var pf = new PdfCreator(OrderNo);
+                        pf.RequestContents = _rc;
+                        pf.sql = sql;
+                        pf.ConnectionString = _connectionString;
+                        pf.ohms = ohms;
                         pf.Create(OutputDirectory);
                     }
                 }
             }
             return;
+        }
 
-            switch (OutputMode)
+        private static void Headerinitialize(OrderHeaderModel ohm, SqlDataReader sdr)
+        {
+
+            ohm.SupplierName = sdr["仕入先名"].ToString();
+            ohm.CustomerName = sdr["学校名"].ToString();
+            ohm.OperatorName = sdr["操作者名"].ToString();
+
+            switch ((Int16)sdr["納入区分"])
             {
-                case "PDF":
-                    {
-                        var pf = new PdfCreator(OrderNo);
-                        pf.RequestContents = _rc;
-                        pf.sql = sql;
-                        pf.ConnectionString = _connectionString;
-                        pf.ohm = ohm;
-                        pf.Create(OutputDirectory);
+                case 1:
+                    ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
+                    ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
+                    ohm.CustomerTel = sdr["支店TEL"].ToString();
+                    break;
+                case 2:
+                    Warehouse w = new Warehouse(_connectionString);
+                    ohm.DeliveryTypeName = w.Name + " 入れ";
+                    ohm.CustomerAddress = w.Address;
+                    ohm.CustomerTel = w.Tel;
+                    break;
+                case 4:
+                    ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
+                    ohm.CustomerAddress = "";
+                    ohm.CustomerTel = "";
+                    break;
+                case 5:
+                    ohm.DeliveryTypeName = "直送";
+                    ohm.CustomerAddress = sdr["学校住所1"].ToString() + sdr["学校住所2"].ToString();
+                    ohm.CustomerTel = sdr["学校TEL"].ToString();
+                    break;
+                case 7:
+                    ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
+                    ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
+                    ohm.CustomerTel = sdr["支店TEL"].ToString();
+                    break;
+                case 8:
+                    ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
+                    ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
+                    ohm.CustomerTel = sdr["支店TEL"].ToString();
+                    break;
+                default:
+                    break;
 
-                        break;
-                    }
-                case "PRINTER":
-                    {
-                        //pageReport.Document.Printer.PrinterSettings.PrinterName = "DocuPrint P350 d";
-                        //pageDocument.PageReport.Document.Print(false, false, false);
-
-                        break;
-                    }
             }
 
-            return;
+            ohm.OrderNo = "H" + sdr["発注伝票番号"].ToString();
+            ohm.OrderDate = DateTime.ParseExact(sdr["発注伝票日付"].ToString(), "yyyyMMdd", null).ToString("yyyy年 M月 d日");
+            ohm.PrivateNotes = sdr["発注社内伝票摘要"].ToString();
+            ohm.PublicNotes = sdr["発注社外伝票摘要"].ToString();
+            ohm.SelfZipCode = sdr["操作者支店郵便番号"].ToString();
+            ohm.SelfAddress = sdr["操作者支店住所1"].ToString() + sdr["操作者支店住所2"].ToString();
+            CompanyInfo c = new CompanyInfo(_connectionString);
+            ohm.SelfCompanyName = c.Name;
+            ohm.SelfDepartmentName = sdr["操作者支店名称"].ToString();
+            ohm.SelfTel = sdr["操作者支店TEL"].ToString();
+            ohm.SelfFax = sdr["操作者支店FAX"].ToString();
+            ohm.ShippingDate = ((int)sdr["出荷日付"] == 0) ? "" : String.Format("納期指定：{0}", DateTime.ParseExact(sdr["出荷日付"].ToString(), "yyyyMMdd", null).ToString("yyyy/MM/dd"));
+            ohm.OrderNoTimeStamp = "受注No.J" + sdr["受注表示番号"].ToString() + "-" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            ohm.FixedNotes = _fixedNotes.Trim();
+
         }
+
         private static void UpdateOrderState(string OrderNo)
         {
             Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Updating order state...");

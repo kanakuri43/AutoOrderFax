@@ -53,6 +53,7 @@
     <Compile Include="CompanyInfo.cs" />
     <Compile Include="OrderDetailModel.cs" />
     <Compile Include="OrderHeaderModel.cs" />
+    <Compile Include="OrderInfo.cs" />
     <Compile Include="OrderSlip.xaml.cs">
       <DependentUpon>OrderSlip.xaml</DependentUpon>
     </Compile>

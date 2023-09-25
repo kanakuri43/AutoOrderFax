@@ -20,7 +20,7 @@ namespace AutoOrderFax
         public RequestContents RequestContents { get; set; }
         public string sql { get; set; }
         public string ConnectionString { get; set; }
-        public OrderHeaderModel ohm { get; set; }
+        public List<OrderHeaderModel> ohms { get; set; }
 
         private string _orderNo;
 
@@ -31,19 +31,25 @@ namespace AutoOrderFax
 
         public void Create(string OutputDirectory)
         {
-            OrderSlip orderSlip = new OrderSlip();
 
-            orderSlip.DataContext = ohm;
-            System.Windows.Documents.FixedPage fixedPage = new System.Windows.Documents.FixedPage();
-            fixedPage.Children.Add(orderSlip);
-
-            // A4よこ
-            fixedPage.Width = 11.69 * 96;
-            fixedPage.Height = 8.27 * 96;
-            PageContent pc = new PageContent();
-            ((IAddChild)pc).AddChild(fixedPage);
             FixedDocument fixedDocument = new FixedDocument();
-            fixedDocument.Pages.Add(pc);
+
+            foreach(var ohm in ohms) 
+            {
+
+                OrderSlip orderSlip = new OrderSlip();
+                orderSlip.DataContext = ohm;
+
+                FixedPage fixedPage = new FixedPage();
+                fixedPage.Children.Add(orderSlip);
+                // A4よこ
+                fixedPage.Width = 11.69 * 96;
+                fixedPage.Height = 8.27 * 96;
+                PageContent pc = new PageContent();
+                ((IAddChild)pc).AddChild(fixedPage);
+
+                fixedDocument.Pages.Add(pc);
+            }
 
             using (Package p = Package.Open(OutputDirectory + @"/" + _orderNo.ToString() + @".xps", FileMode.Create))
 
