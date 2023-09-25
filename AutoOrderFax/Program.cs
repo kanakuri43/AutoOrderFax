@@ -348,6 +348,16 @@ namespace AutoOrderFax
                                         ohm.CustomerAddress = sdr["学校住所1"].ToString() + sdr["学校住所2"].ToString();
                                         ohm.CustomerTel = sdr["学校TEL"].ToString();
                                         break;
+                                    case 7:
+                                        ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
+                                        ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
+                                        ohm.CustomerTel = sdr["支店TEL"].ToString();
+                                        break;
+                                    case 8:
+                                        ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
+                                        ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
+                                        ohm.CustomerTel = sdr["支店TEL"].ToString();
+                                        break;
                                     default:
                                         break;
 
