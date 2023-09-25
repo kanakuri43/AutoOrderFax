@@ -40,7 +40,7 @@ namespace AutoOrderFax
         private static string _proxyPassword;    
 
         private static RequestContents _rc;
-        private static string _lineCount;              
+        private static string _linesPerPage;              
         private static string _query;               
         private static string _logRetentionDays;     
         private static string _fixedNotes;          
@@ -117,7 +117,7 @@ namespace AutoOrderFax
             _outputDirectory = currentDirectory + @"pdf\";
             _outputMode = xml.Element("OutputMode").Value.Trim();
             _logRetentionDays = xml.Element("LogRetentionDays").Value.Trim();
-            _lineCount = xml.Element("LineCount").Value;    
+            _linesPerPage = xml.Element("LineCount").Value;    
             _query = xml.Element("Query").Value;    // 発注データ取得クエリ
             _fixedNotes = xml.Element("FixedNotes").Value;    // 発注データ取得クエリ
 
