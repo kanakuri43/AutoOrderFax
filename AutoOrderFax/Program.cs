@@ -293,7 +293,9 @@ namespace AutoOrderFax
         }
         private static void CreateOrderSlip(string OutputDirectory, string OrderNo, string OutputMode)
         {
-            OrderHeaderModel ohm = new OrderHeaderModel();
+            var ohms = new List<OrderHeaderModel>();
+            var ohm = new OrderHeaderModel();
+
             DataTable FullDataTable ;
 
             string sql = "PD発注_注文書 " + OrderNo.ToString();
@@ -320,7 +322,6 @@ namespace AutoOrderFax
                         {
                             if ((Int16)sdr["発注行番号"] == 1)
                             {
-
                                 ohm.SupplierName = sdr["仕入先名"].ToString();
                                 ohm.CustomerName = sdr["学校名"].ToString();
                                 ohm.OperatorName = sdr["操作者名"].ToString();
@@ -407,10 +408,10 @@ namespace AutoOrderFax
                             odm.LinePrivateNotes = sdr["発注社内明細摘要"].ToString();
                             odm.LinePublicNotes = sdr["発注社外明細摘要"].ToString();
 
-                            ohm.OrderDetails.Add(odm);
-
- 
+                            ohm.OrderDetails.Add(odm); 
                         }
+                        ohms.Add(ohm);
+
                         // PDF出力
                         pf.ohm = ohm;
                         pf.Create(OutputDirectory);
