@@ -212,6 +212,7 @@
                                                        FontSize="14"
                                                        Text="{Binding ItemCode}" />
                                             <TextBlock Grid.Row="1" 
+                                                       FontSize="13"
                                                        Text="{Binding ClassDivide}" />
                                         </Grid>
                                     </Grid>

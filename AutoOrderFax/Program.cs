@@ -31,19 +31,19 @@ namespace AutoOrderFax
         private static string _outputDirectory;
         private static string _outputMode;
         private static string _ftpHostName;
-        private static string _ftpPort;             
-        private static string _ftpUser;            
-        private static string _ftpPassword;        
+        private static string _ftpPort;
+        private static string _ftpUser;
+        private static string _ftpPassword;
         private static string _proxyHostName;
-        private static string _proxyPort;            
-        private static string _proxyUser;           
-        private static string _proxyPassword;    
+        private static string _proxyPort;
+        private static string _proxyUser;
+        private static string _proxyPassword;
 
         private static RequestContents _rc;
-        private static string _linesPerPage;              
-        private static string _query;               
-        private static string _logRetentionDays;     
-        private static string _fixedNotes;          
+        private static string _linesPerPage;
+        private static string _query;
+        private static string _logRetentionDays;
+        private static string _fixedNotes;
 
         [STAThread]
         public static void Main(string[] args)
@@ -117,7 +117,7 @@ namespace AutoOrderFax
             _outputDirectory = currentDirectory + @"pdf\";
             _outputMode = xml.Element("OutputMode").Value.Trim();
             _logRetentionDays = xml.Element("LogRetentionDays").Value.Trim();
-            _linesPerPage = xml.Element("LineCount").Value;    
+            _linesPerPage = xml.Element("LineCount").Value;
             _query = xml.Element("Query").Value;    // 発注データ取得クエリ
             _fixedNotes = xml.Element("FixedNotes").Value;    // 発注データ取得クエリ
 
@@ -287,7 +287,7 @@ namespace AutoOrderFax
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Not Found.");
             }
 
-            
+
             return true;
         }
         private static void CreateOrderSlip(string OutputDirectory, string OrderNo, string OutputMode)
@@ -297,7 +297,7 @@ namespace AutoOrderFax
             {
                 OrderNo = OrderNo
 
-            }; 
+            };
             var ohms = new List<OrderHeaderModel>();
 
             string sql = "PD発注_注文書 " + OrderNo.ToString();
@@ -333,16 +333,17 @@ namespace AutoOrderFax
                             odm.UnitPrice = float.Parse(sdr["税抜仕入単価"].ToString());
                             odm.Price = float.Parse(sdr["税抜仕入金額"].ToString());
 
-                            var sourceText = "";
-                            for (int i = 1; i <= 8; i++)
+                            int[] classDivideArray;
+                            classDivideArray = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, };
+                            for (int i = 0; i < 8; i++)
                             {
-                                sourceText += sdr["クラス0" + i.ToString()].ToString();
+                                classDivideArray[i] = (Int16)sdr["クラス0" + ((i + 1).ToString())];
                             }
-                            odm.ClassDivide = ClassDivideEncoder.Encode(sdr["クラス分け入力区分"].ToString(), sourceText);
+                            odm.ClassDivide = ClassDivideEncoder.Encode(sdr["クラス分け入力区分"].ToString(), classDivideArray);
                             odm.LinePrivateNotes = sdr["発注社内明細摘要"].ToString();
                             odm.LinePublicNotes = sdr["発注社外明細摘要"].ToString();
 
-                            ohm.OrderDetails.Add(odm); 
+                            ohm.OrderDetails.Add(odm);
 
                             // ページ行数ごとに1ページ分のデータを確定させる
                             if (((Int16)sdr["発注行番号"] % int.Parse(_linesPerPage)) == 0)
@@ -350,9 +351,9 @@ namespace AutoOrderFax
                                 ohms.Add(ohm);
 
                                 // 新しいHeaderModelインスタンスを作成
-                                ohm = new OrderHeaderModel  
+                                ohm = new OrderHeaderModel
                                 {
-                                    OrderNo = OrderNo  
+                                    OrderNo = OrderNo
                                 };
 
                                 Headerinitialize(ohm, sdr);
