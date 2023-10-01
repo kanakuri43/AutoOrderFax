@@ -14,18 +14,20 @@
   </LineCount>
   <Query>
     SELECT
-     D.発注伝票番号
+      D.発注伝票番号 
     FROM
-     D発注FAX D
-     INNER JOIN M仕入先 M
-      ON D.仕入先コード = M.仕入先コード
-      AND M.削除区分 = 0
-      AND LEN(ISNULL(M.FAX, '')) >= 6
-      AND D.発注伝票番号 = 1001355
+      D発注FAX D 
+      INNER JOIN M仕入先 M 
+        ON D.仕入先コード = M.仕入先コード 
+        AND M.削除区分 = 0 
+        AND LEN(ISNULL(M.FAX, '')) >= 6 
+      INNER JOIN D発注 O
+        ON D.発注伝票番号 = O.発注伝票番号
+	    AND O.削除区分 =0
     WHERE
-     D.送信Mode = 0
+      D.送信Mode = 0 
     GROUP BY
-     D.発注伝票番号
+      D.発注伝票番号
   </Query>
   <FixedNotes>
     自動FAX
@@ -50,15 +52,15 @@
 		<User>root</User>
 		<Password>password</Password> 
     -->
-    <Host>ftp://172.16.6.11/</Host>
-    <Port>21</Port>
-    <User>root</User>
-    <Password>password</Password>
+    <Host>auto.lcloud.jp</Host>
+    <Port>22</Port>
+		<User>F000540001</User>
+		<Password>J9rtb6UR</Password> 
   </FTPServer>
   
   <ProxyServer>
-    <Host>a</Host>
-    <Port>1</Port>
+    <Host></Host>
+    <Port></Port>
     <User></User>
     <Password></Password>
   </ProxyServer>
