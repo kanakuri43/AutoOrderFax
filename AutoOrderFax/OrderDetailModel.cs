@@ -24,8 +24,14 @@ namespace AutoOrderFax
         public string SupplierFax { get; set; }
         public float UnitPrice { get; set; }
         public float Price { get; set; }
-        public string ClassDivide { get; set; }
+        public int[] ClassDivide { get; set; }
         public string LinePrivateNotes { get; set; }
         public string LinePublicNotes { get; set; }
+
+        public OrderDetailModel()
+        {
+            ClassDivide = new int[8];
+        }
     }
+
 }

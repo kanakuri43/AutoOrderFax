@@ -333,13 +333,10 @@ namespace AutoOrderFax
                             odm.UnitPrice = float.Parse(sdr["税抜仕入単価"].ToString());
                             odm.Price = float.Parse(sdr["税抜仕入金額"].ToString());
 
-                            int[] classDivideArray;
-                            classDivideArray = new int[] { 0, 0, 0, 0, 0, 0, 0, 0, };
                             for (int i = 0; i < 8; i++)
                             {
-                                classDivideArray[i] = (Int16)sdr["クラス0" + ((i + 1).ToString())];
+                                odm.ClassDivide[i] = (Int16)sdr["クラス0" + ((i + 1).ToString())];
                             }
-                            odm.ClassDivide = ClassDivideEncoder.Encode(sdr["クラス分け入力区分"].ToString(), classDivideArray);
                             odm.LinePrivateNotes = sdr["発注社内明細摘要"].ToString();
                             odm.LinePublicNotes = sdr["発注社外明細摘要"].ToString();
 

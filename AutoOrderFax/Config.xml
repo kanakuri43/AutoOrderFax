@@ -23,9 +23,10 @@
         AND LEN(ISNULL(M.FAX, '')) >= 6 
       INNER JOIN D発注 O
         ON D.発注伝票番号 = O.発注伝票番号
-	    AND O.削除区分 =0
+	      AND O.削除区分 =0
     WHERE
       D.送信Mode = 0 
+      AND D.発注伝票番号 = 1001367
     GROUP BY
       D.発注伝票番号
   </Query>
@@ -52,15 +53,15 @@
 		<User>root</User>
 		<Password>password</Password> 
     -->
-    <Host>auto.lcloud.jp</Host>
-    <Port>22</Port>
-		<User>F000540001</User>
-		<Password>J9rtb6UR</Password> 
+    <Host>ftp://172.16.6.11/</Host>
+    <Port>21</Port>
+		<User>root</User>
+		<Password>password</Password> 
   </FTPServer>
   
   <ProxyServer>
-    <Host></Host>
-    <Port></Port>
+    <Host>1</Host>
+    <Port>1</Port>
     <User></User>
     <Password></Password>
   </ProxyServer>

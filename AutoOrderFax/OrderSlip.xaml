@@ -196,25 +196,50 @@
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="300"/>
-                                            <ColumnDefinition />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Column="0" 
-                                                   Text="{Binding ItemName}" />
-                                        <Grid Grid.Column="1">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition/>
-                                                <RowDefinition/>
-                                            </Grid.RowDefinitions>
-                                            <TextBlock Grid.Row="0" 
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+                                        <Grid Grid.Row="0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="350"/>
+                                                <ColumnDefinition/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" 
+                                                       Text="{Binding ItemName}" />
+                                            <TextBlock Grid.Column="1" 
                                                        HorizontalAlignment="Right"
                                                        FontSize="14"
                                                        Text="{Binding ItemCode}" />
-                                            <TextBlock Grid.Row="1" 
-                                                       FontSize="13"
-                                                       Text="{Binding ClassDivide}" />
                                         </Grid>
+                                        <StackPanel Grid.Row="1"
+                                                    HorizontalAlignment="Right"
+                                                    Orientation="Horizontal">
+                                            <TextBlock FontSize="13"
+                                                        Width="24"
+                                                        Text="{Binding ClassDivide[0], StringFormat={}{0:#}}"  />
+                                            <TextBlock FontSize="13"
+                                                        Width="24"
+                                                        Text="{Binding ClassDivide[1], StringFormat={}{0:#}}" />
+                                            <TextBlock FontSize="13"
+                                                        Width="24"
+                                                        Text="{Binding ClassDivide[2], StringFormat={}{0:#}}" />
+                                            <TextBlock FontSize="13"
+                                                        Width="24"
+                                                        Text="{Binding ClassDivide[3], StringFormat={}{0:#}}" />
+                                            <TextBlock FontSize="13"
+                                                        Width="24"
+                                                        Text="{Binding ClassDivide[4], StringFormat={}{0:#}}" />
+                                            <TextBlock FontSize="13"
+                                                        Width="24"
+                                                        Text="{Binding ClassDivide[5], StringFormat={}{0:#}}" />
+                                            <TextBlock FontSize="13"
+                                                        Width="24"
+                                                        Text="{Binding ClassDivide[6], StringFormat={}{0:#}}" />
+                                            <TextBlock FontSize="13"
+                                                        Width="24"
+                                                        Text="{Binding ClassDivide[7], StringFormat={}{0:#}}" />
+                                        </StackPanel>
                                     </Grid>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
