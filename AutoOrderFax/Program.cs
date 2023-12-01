@@ -193,7 +193,7 @@ namespace AutoOrderFax
             }
             foreach (string orderNo in OrderNoList)
             {
-                CreateOrderSlip(_outputDirectory, orderNo, _outputMode);
+                CreateOrderSlipPdf(_outputDirectory, orderNo, _outputMode);
 
                 Console.WriteLine(DateTime.Now.ToString("HH:mm:ss ") + @"Order No. " + orderNo + @" created.");
                 UpdateOrderState(orderNo);
@@ -290,8 +290,10 @@ namespace AutoOrderFax
 
             return true;
         }
-        private static void CreateOrderSlip(string OutputDirectory, string OrderNo, string OutputMode)
+        private static void CreateOrderSlipPdf(string OutputDirectory, string OrderNo, string OutputMode)
         {
+            string sql = "";
+
             // 新しい HeaderModel インスタンスを作成
             var ohm = new OrderHeaderModel
             {
@@ -300,7 +302,28 @@ namespace AutoOrderFax
             };
             var ohms = new List<OrderHeaderModel>();
 
-            string sql = "PD発注_注文書 " + OrderNo.ToString();
+            // 先に納入区分を見て、PD発注_注文書 か PD発注_注文書_即売 の切り分けをする
+            sql = "PD発注_注文書 " + OrderNo.ToString();
+            using (SqlCommand command = new SqlCommand(sql, Connection))
+            {
+                using (SqlDataReader sdr = command.ExecuteReader())
+                {
+                    if (sdr.HasRows)
+                    {
+                        if (sdr.Read())
+                        {
+                            if ((Int16)sdr["納入区分"] == 6)
+                            {
+                                sql = "PD発注_注文書_即売 " + OrderNo.ToString();
+                            } else {
+                                sql = "PD発注_注文書 " + OrderNo.ToString();
+                            }
+                        }
+                    }
+                }
+            }
+
+            
             using (SqlCommand command = new SqlCommand(sql, Connection))
             {
                 using (SqlDataReader sdr = command.ExecuteReader())
@@ -362,13 +385,13 @@ namespace AutoOrderFax
                             ohms.Add(ohm);
                         }
 
-                        // PDF出力
+                        // PDF・Requestファイル 出力
                         var pf = new PdfCreator(OrderNo);
                         pf.RequestContents = _rc;
                         pf.sql = sql;
                         pf.ConnectionString = _connectionString;
                         pf.ohms = ohms;
-                        pf.Create(OutputDirectory);
+                        pf.CreatePdfAndRequestFiles(OutputDirectory);
                     }
                 }
             }
@@ -390,6 +413,7 @@ namespace AutoOrderFax
                     ohm.CustomerTel = sdr["支店TEL"].ToString();
                     break;
                 case 2:
+                case 6:
                     Warehouse w = new Warehouse(_connectionString);
                     ohm.DeliveryTypeName = w.Name + " 入れ";
                     ohm.CustomerAddress = w.Address;
@@ -432,7 +456,14 @@ namespace AutoOrderFax
             ohm.SelfTel = sdr["操作者支店TEL"].ToString();
             ohm.SelfFax = sdr["操作者支店FAX"].ToString();
             ohm.ShippingDate = ((int)sdr["出荷日付"] == 0) ? "" : String.Format("納期指定：{0}", DateTime.ParseExact(sdr["出荷日付"].ToString(), "yyyyMMdd", null).ToString("yyyy/MM/dd"));
-            ohm.OrderNoTimeStamp = "受注No.J" + sdr["受注表示番号"].ToString() + "-" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            if ((Int16)sdr["納入区分"] == 6)
+            {
+                ohm.OrderNoTimeStamp = "即売No.SB" + sdr["受注表示番号"].ToString() + "-" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            }
+            else
+            {
+                ohm.OrderNoTimeStamp = "受注No.J" + sdr["受注表示番号"].ToString() + "-" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            }
             ohm.FixedNotes = _fixedNotes.Trim();
 
         }

@@ -29,7 +29,7 @@ namespace AutoOrderFax
             _orderNo = OrderNo;
         }
 
-        public void Create(string OutputDirectory)
+        public void CreatePdfAndRequestFiles(string OutputDirectory)
         {
 
             FixedDocument fixedDocument = new FixedDocument();
