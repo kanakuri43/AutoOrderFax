@@ -22,7 +22,9 @@ namespace AutoOrderFax
                         + " FROM "
                         + "   D発注 "
                         + " WHERE "
-                        + "   削除区分 = 0 ";
+                        + "   削除区分 = 0 "
+                        + "   AND 発注伝票番号 = " + OrderNo
+                        ;
             using (SqlCommand command = new SqlCommand(sql, connection))
             {
                 using (SqlDataReader sdr = command.ExecuteReader())
@@ -31,7 +33,7 @@ namespace AutoOrderFax
                     {
                         if (sdr.Read())
                         {
-                            LineCount = (int)sdr["行数"];
+                            LineCount = (Int16)sdr["行数"];
                         }
                     }
                 }

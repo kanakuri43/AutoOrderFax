@@ -57,11 +57,21 @@
                            FontSize="24"
                            TextAlignment="Center"/>
 
+                <Grid Grid.Column="3">
+                    <Grid.RowDefinitions>
+                        <RowDefinition />
+                        <RowDefinition Height="30"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0"
+                               VerticalAlignment="Bottom"
+                                Text="{Binding PageDescription, StringFormat=Page: {0}}"/>
+                    <TextBlock Grid.Row="1"
+                                Text="{Binding OrderNo, StringFormat=発注No.{0}}"/>
+                </Grid>
                 <StackPanel Grid.Column="3" 
                             Orientation="Horizontal"
                             VerticalAlignment="Bottom"           
                             >
-                    <TextBlock Text="{Binding OrderNo, StringFormat=発注No.{0}}"/>
                 </StackPanel>
             </Grid>
 
@@ -93,7 +103,11 @@
                     </StackPanel>
                     <StackPanel Grid.Row="2" 
                                 Orientation="Horizontal">
-                        <Border Width="70"/>
+                        <!--<Border Width="70"/>-->
+                        <TextBlock Width="70"
+                                   VerticalAlignment="Bottom"
+                                   Text="{Binding CustomerZip}"                                   
+                                   FontSize="14"/>                        
                         <TextBlock Text="{Binding CustomerAddress}"/>
                     </StackPanel>
                     <StackPanel Grid.Row="3" 
@@ -282,10 +296,10 @@
                                             <RowDefinition />
                                         </Grid.RowDefinitions>
                                         <TextBlock Grid.Row="0" 
-                                                   Text="{Binding UnitPrice}" 
+                                                   Text="{Binding UnitPrice, StringFormat={}{0:N0}}"
                                                    TextAlignment="Right"/>
                                         <TextBlock Grid.Row="1" 
-                                                   Text="{Binding Price}" 
+                                                   Text="{Binding Price, StringFormat={}{0:N0}}"
                                                    TextAlignment="Right"/>
                                     </Grid>
                                 </DataTemplate>

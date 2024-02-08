@@ -290,6 +290,20 @@ namespace AutoOrderFax
 
             return true;
         }
+        private static int CalculateTotalPages(int totalLines)
+        {
+            // 総行数を1ページあたりの行数で割る
+            int pages = totalLines / int.Parse(_linesPerPage);
+
+            // 割り切れない場合は、最後のページを加える
+            if (totalLines % int.Parse(_linesPerPage) != 0)
+            {
+                pages++; // 最後の部分があるため、ページ数を1増やす
+            }
+
+            return pages;
+        }
+
         private static void CreateOrderSlipPdf(string OutputDirectory, string OrderNo, string OutputMode)
         {
             string sql = "";
@@ -330,6 +344,9 @@ namespace AutoOrderFax
                 {
                     if (sdr.HasRows)
                     {
+                        var orderInfo = new OrderInfo(_connectionString, OrderNo);
+                        var pageCount = 0;
+                        var allPageCount = CalculateTotalPages(orderInfo.LineCount);
 
                         while (sdr.Read())
                         {
@@ -365,9 +382,13 @@ namespace AutoOrderFax
 
                             ohm.OrderDetails.Add(odm);
 
+
+
                             // ページ行数ごとに1ページ分のデータを確定させる
                             if (((Int16)sdr["発注行番号"] % int.Parse(_linesPerPage)) == 0)
                             {
+                                pageCount++;
+                                ohm.PageDescription = pageCount.ToString() + "/" + allPageCount.ToString();
                                 ohms.Add(ohm);
 
                                 // 新しいHeaderModelインスタンスを作成
@@ -382,6 +403,8 @@ namespace AutoOrderFax
                         }
                         if (ohm.OrderDetails.Count() != 0)
                         {
+                            pageCount++;
+                            ohm.PageDescription = pageCount.ToString() + "/" + allPageCount.ToString();
                             ohms.Add(ohm);
                         }
 
@@ -409,6 +432,7 @@ namespace AutoOrderFax
             {
                 case 1:
                     ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
+                    ohm.CustomerZip = "12345678";
                     ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
                     ohm.CustomerTel = sdr["支店TEL"].ToString();
                     break;
@@ -416,26 +440,31 @@ namespace AutoOrderFax
                 case 6:
                     Warehouse w = new Warehouse(_connectionString);
                     ohm.DeliveryTypeName = w.Name + " 入れ";
+                    ohm.CustomerZip = "12345678";
                     ohm.CustomerAddress = w.Address;
                     ohm.CustomerTel = w.Tel;
                     break;
                 case 4:
                     ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
+                    ohm.CustomerZip = "12345678";
                     ohm.CustomerAddress = "";
                     ohm.CustomerTel = "";
                     break;
                 case 5:
                     ohm.DeliveryTypeName = "直送";
+                    ohm.CustomerZip = "12345678";
                     ohm.CustomerAddress = sdr["学校住所1"].ToString() + sdr["学校住所2"].ToString();
                     ohm.CustomerTel = sdr["学校TEL"].ToString();
                     break;
                 case 7:
                     ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
+                    ohm.CustomerZip = "12345678";
                     ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
                     ohm.CustomerTel = sdr["支店TEL"].ToString();
                     break;
                 case 8:
                     ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
+                    ohm.CustomerZip = "12345678";
                     ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
                     ohm.CustomerTel = sdr["支店TEL"].ToString();
                     break;

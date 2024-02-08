@@ -15,6 +15,7 @@ namespace AutoOrderFax
         public string OrderDate { get; set; }
         public string SupplierName { get; set; } 
         public string DeliveryTypeName { get; set; }
+        public string CustomerZip { get; set; } 
         public string CustomerAddress { get; set; } 
         public string CustomerName { get; set; } 
         public string CustomerTel { get; set; }
@@ -30,6 +31,7 @@ namespace AutoOrderFax
         public string ShippingDate { get; set; }
         public string OrderNoTimeStamp { get; set; }
         public string FixedNotes { get; set; }
+        public string PageDescription { get; set; }
 
         public List<OrderDetailModel> OrderDetails { get; set; } = new List<OrderDetailModel>();
     }
