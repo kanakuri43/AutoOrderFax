@@ -13,6 +13,7 @@ namespace AutoOrderFax
         public string Name { get; }
         public string Address { get; }
         public string Tel { get; }
+        public string Zip { get; }
 
         public Warehouse(string ConnectionString)
         {
@@ -22,6 +23,7 @@ namespace AutoOrderFax
                         + "  倉庫名 "
                         + "  , 住所1 + 住所2 住所"
                         + "  , TEL "
+                        + "  , 郵便番号 "
                         + " FROM "
                         + "   M支店 "
                         + "     LEFT OUTER JOIN M倉庫 "
@@ -39,6 +41,7 @@ namespace AutoOrderFax
                             Name = sdr["倉庫名"].ToString();
                             Address = sdr["住所"].ToString();
                             Tel = sdr["TEL"].ToString();
+                            Zip = sdr["郵便番号"].ToString();
                         }
                     }
                 }

@@ -348,7 +348,7 @@ namespace AutoOrderFax
                         var pageCount = 0;
                         var allPageCount = CalculateTotalPages(orderInfo.LineCount);
 
-                        while (sdr.Read())
+                        while (sdr.Read()) 
                         {
                             if ((Int16)sdr["発注行番号"] == 1)
                             {
@@ -432,7 +432,7 @@ namespace AutoOrderFax
             {
                 case 1:
                     ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
-                    ohm.CustomerZip = "12345678";
+                    ohm.CustomerZip = sdr["支店郵便番号"].ToString();
                     ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
                     ohm.CustomerTel = sdr["支店TEL"].ToString();
                     break;
@@ -440,31 +440,31 @@ namespace AutoOrderFax
                 case 6:
                     Warehouse w = new Warehouse(_connectionString);
                     ohm.DeliveryTypeName = w.Name + " 入れ";
-                    ohm.CustomerZip = "12345678";
+                    ohm.CustomerZip = w.Zip;
                     ohm.CustomerAddress = w.Address;
                     ohm.CustomerTel = w.Tel;
                     break;
                 case 4:
                     ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
-                    ohm.CustomerZip = "12345678";
+                    ohm.CustomerZip = "";
                     ohm.CustomerAddress = "";
                     ohm.CustomerTel = "";
                     break;
                 case 5:
                     ohm.DeliveryTypeName = "直送";
-                    ohm.CustomerZip = "12345678";
+                    ohm.CustomerZip = sdr["学校郵便番号"].ToString(); 
                     ohm.CustomerAddress = sdr["学校住所1"].ToString() + sdr["学校住所2"].ToString();
                     ohm.CustomerTel = sdr["学校TEL"].ToString();
                     break;
                 case 7:
                     ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
-                    ohm.CustomerZip = "12345678";
+                    ohm.CustomerZip = sdr["支店郵便番号"].ToString();
                     ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
                     ohm.CustomerTel = sdr["支店TEL"].ToString();
                     break;
                 case 8:
                     ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
-                    ohm.CustomerZip = "12345678";
+                    ohm.CustomerZip = sdr["支店郵便番号"].ToString();
                     ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
                     ohm.CustomerTel = sdr["支店TEL"].ToString();
                     break;
