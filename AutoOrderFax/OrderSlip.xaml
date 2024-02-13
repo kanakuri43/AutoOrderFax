@@ -105,6 +105,7 @@
                                 Orientation="Horizontal">
                         <!--<Border Width="70"/>-->
                         <TextBlock Width="70"
+                                   Margin="0,0,0,4"
                                    VerticalAlignment="Bottom"
                                    Text="{Binding CustomerZip}"                                   
                                    FontSize="14"/>                        
@@ -112,7 +113,12 @@
                     </StackPanel>
                     <StackPanel Grid.Row="3" 
                                 Orientation="Horizontal">
-                        <Border Width="70"/>
+                        <!--<Border Width="70"/>-->
+                        <TextBlock Width="70"
+                                   Margin="0,0,0,4"
+                                   VerticalAlignment="Bottom"
+                                   Text="{Binding CustomerCode}"                                   
+                                   FontSize="14"/>
                         <TextBlock Text="{Binding CustomerName}"/>
                     </StackPanel>
                 </Grid>

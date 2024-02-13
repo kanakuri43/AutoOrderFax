@@ -377,8 +377,8 @@ namespace AutoOrderFax
                             {
                                 odm.ClassDivide[i] = (Int16)sdr["クラス0" + ((i + 1).ToString())];
                             }
-                            odm.LinePrivateNotes = sdr["発注社内明細摘要"].ToString();
-                            odm.LinePublicNotes = sdr["発注社外明細摘要"].ToString();
+                            odm.LinePrivateNotes = sdr["発注社内明細摘要"].ToString();                           
+                            odm.LinePublicNotes = sdr["請求区分"].ToString() + " " + float.Parse(sdr["売上単価"].ToString()).ToString("N2") + " " + sdr["発注社外明細摘要"].ToString();
 
                             ohm.OrderDetails.Add(odm);
 
@@ -425,9 +425,11 @@ namespace AutoOrderFax
         {
 
             ohm.SupplierName = sdr["仕入先名"].ToString();
+            ohm.CustomerCode = sdr["学校コード"].ToString();
             ohm.CustomerName = sdr["学校名"].ToString();
             ohm.OperatorName = sdr["操作者名"].ToString();
 
+            // 納入区分による届先の切り分け
             switch ((Int16)sdr["納入区分"])
             {
                 case 1:
@@ -457,11 +459,6 @@ namespace AutoOrderFax
                     ohm.CustomerTel = sdr["学校TEL"].ToString();
                     break;
                 case 7:
-                    ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
-                    ohm.CustomerZip = sdr["支店郵便番号"].ToString();
-                    ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
-                    ohm.CustomerTel = sdr["支店TEL"].ToString();
-                    break;
                 case 8:
                     ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
                     ohm.CustomerZip = sdr["支店郵便番号"].ToString();
@@ -477,13 +474,29 @@ namespace AutoOrderFax
             ohm.OrderDate = DateTime.ParseExact(sdr["発注伝票日付"].ToString(), "yyyyMMdd", null).ToString("yyyy年 M月 d日");
             ohm.PrivateNotes = sdr["発注社内伝票摘要"].ToString();
             ohm.PublicNotes = sdr["発注社外伝票摘要"].ToString();
-            ohm.SelfZipCode = sdr["操作者支店郵便番号"].ToString();
-            ohm.SelfAddress = sdr["操作者支店住所1"].ToString() + sdr["操作者支店住所2"].ToString();
+
+            // 自社名以外の発注元情報（発注書の右上）
+            // 納入区分が8(在庫補充)の時は操作者マスタから
+            // 8以外の時は学校の情報を印字
             CompanyInfo c = new CompanyInfo(_connectionString);
             ohm.SelfCompanyName = c.Name;
-            ohm.SelfDepartmentName = sdr["操作者支店名称"].ToString();
-            ohm.SelfTel = sdr["操作者支店TEL"].ToString();
-            ohm.SelfFax = sdr["操作者支店FAX"].ToString();
+            if ((Int16)sdr["納入区分"] == 8)
+            {
+                ohm.SelfZipCode = sdr["操作者支店郵便番号"].ToString();
+                ohm.SelfAddress = sdr["操作者支店住所1"].ToString() + sdr["操作者支店住所2"].ToString();
+                ohm.SelfDepartmentName = sdr["操作者支店名称"].ToString();
+                ohm.SelfTel = sdr["操作者支店TEL"].ToString();
+                ohm.SelfFax = sdr["操作者支店FAX"].ToString();
+            }
+            else
+            {
+                ohm.SelfZipCode = sdr["学校担当者支店郵便番号"].ToString();
+                ohm.SelfAddress = sdr["学校担当者支店住所1"].ToString() + sdr["学校担当者支店住所2"].ToString();
+                ohm.SelfDepartmentName = sdr["学校担当者支店名称"].ToString();
+                ohm.SelfTel = sdr["学校担当者支店TEL"].ToString();
+                ohm.SelfFax = sdr["学校担当者支店FAX"].ToString();
+            }
+
             ohm.ShippingDate = ((int)sdr["出荷日付"] == 0) ? "" : String.Format("納期指定：{0}", DateTime.ParseExact(sdr["出荷日付"].ToString(), "yyyyMMdd", null).ToString("yyyy/MM/dd"));
             if ((Int16)sdr["納入区分"] == 6)
             {
