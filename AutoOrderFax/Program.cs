@@ -364,7 +364,7 @@ namespace AutoOrderFax
                             // 入ってたら年組付加
                             odm.SchoolYear = (sdr["学年"].ToString() != "0") ? sdr["学年"].ToString() + "年" : "";
                             odm.SchoolClass = (sdr["組"].ToString() != "") ? sdr["組"].ToString() + "組" : "";
-
+                            odm.BillingTargetType = int.Parse(sdr["請求区分"].ToString());
                             odm.ItemName = sdr["商品名"].ToString() + sdr["規格名"].ToString();
                             odm.ItemCode = sdr["商品コード"].ToString();
                             odm.Qty = float.Parse(sdr["数量"].ToString());
@@ -372,13 +372,15 @@ namespace AutoOrderFax
                             odm.TeacherQty = float.Parse(sdr["教師数量"].ToString());
                             odm.UnitPrice = float.Parse(sdr["税抜仕入単価"].ToString());
                             odm.Price = float.Parse(sdr["税抜仕入金額"].ToString());
+                            odm.UnitSalePrice = float.Parse(sdr["売上単価"].ToString());
+                            odm.SalePrice = float.Parse(sdr["税込売上金額"].ToString());
 
                             for (int i = 0; i < 8; i++)
                             {
                                 odm.ClassDivide[i] = (Int16)sdr["クラス0" + ((i + 1).ToString())];
                             }
                             odm.LinePrivateNotes = sdr["発注社内明細摘要"].ToString();                           
-                            odm.LinePublicNotes = sdr["請求区分"].ToString() + " " + float.Parse(sdr["売上単価"].ToString()).ToString("N2") + " " + sdr["発注社外明細摘要"].ToString();
+                            odm.LinePublicNotes = sdr["発注社外明細摘要"].ToString();
 
                             ohm.OrderDetails.Add(odm);
 
@@ -425,7 +427,7 @@ namespace AutoOrderFax
         {
 
             ohm.SupplierName = sdr["仕入先名"].ToString();
-            ohm.CustomerCode = sdr["学校コード"].ToString();
+            ohm.CustomerCode = (int)sdr["学校コード"];
             ohm.CustomerName = sdr["学校名"].ToString();
             ohm.OperatorName = sdr["操作者名"].ToString();
 
@@ -434,7 +436,7 @@ namespace AutoOrderFax
             {
                 case 1:
                     ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
-                    ohm.CustomerZip = sdr["支店郵便番号"].ToString();
+                    ohm.CustomerZip = FormatZipCode(sdr["支店郵便番号"].ToString());
                     ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
                     ohm.CustomerTel = sdr["支店TEL"].ToString();
                     break;
@@ -442,7 +444,7 @@ namespace AutoOrderFax
                 case 6:
                     Warehouse w = new Warehouse(_connectionString);
                     ohm.DeliveryTypeName = w.Name + " 入れ";
-                    ohm.CustomerZip = w.Zip;
+                    ohm.CustomerZip = FormatZipCode(w.Zip);
                     ohm.CustomerAddress = w.Address;
                     ohm.CustomerTel = w.Tel;
                     break;
@@ -454,14 +456,14 @@ namespace AutoOrderFax
                     break;
                 case 5:
                     ohm.DeliveryTypeName = "直送";
-                    ohm.CustomerZip = sdr["学校郵便番号"].ToString(); 
+                    ohm.CustomerZip = FormatZipCode(sdr["学校郵便番号"].ToString()); 
                     ohm.CustomerAddress = sdr["学校住所1"].ToString() + sdr["学校住所2"].ToString();
                     ohm.CustomerTel = sdr["学校TEL"].ToString();
                     break;
                 case 7:
                 case 8:
                     ohm.DeliveryTypeName = sdr["倉庫名"].ToString() + " 入れ";
-                    ohm.CustomerZip = sdr["支店郵便番号"].ToString();
+                    ohm.CustomerZip = FormatZipCode(sdr["支店郵便番号"].ToString());
                     ohm.CustomerAddress = sdr["支店住所1"].ToString() + sdr["支店住所2"].ToString();
                     ohm.CustomerTel = sdr["支店TEL"].ToString();
                     break;
@@ -476,13 +478,13 @@ namespace AutoOrderFax
             ohm.PublicNotes = sdr["発注社外伝票摘要"].ToString();
 
             // 自社名以外の発注元情報（発注書の右上）
-            // 納入区分が8(在庫補充)の時は操作者マスタから
-            // 8以外の時は学校の情報を印字
+            // 受注と紐づく（学校コードが存在する）場合は学校の情報を
+            // 紐づかない時は操作者マスタから印字
             CompanyInfo c = new CompanyInfo(_connectionString);
             ohm.SelfCompanyName = c.Name;
-            if ((Int16)sdr["納入区分"] == 8)
+            if ((int)sdr["学校コード"] == 0)
             {
-                ohm.SelfZipCode = sdr["操作者支店郵便番号"].ToString();
+                ohm.SelfZipCode = FormatZipCode(sdr["操作者支店郵便番号"].ToString());
                 ohm.SelfAddress = sdr["操作者支店住所1"].ToString() + sdr["操作者支店住所2"].ToString();
                 ohm.SelfDepartmentName = sdr["操作者支店名称"].ToString();
                 ohm.SelfTel = sdr["操作者支店TEL"].ToString();
@@ -490,7 +492,7 @@ namespace AutoOrderFax
             }
             else
             {
-                ohm.SelfZipCode = sdr["学校担当者支店郵便番号"].ToString();
+                ohm.SelfZipCode = FormatZipCode(sdr["学校担当者支店郵便番号"].ToString());
                 ohm.SelfAddress = sdr["学校担当者支店住所1"].ToString() + sdr["学校担当者支店住所2"].ToString();
                 ohm.SelfDepartmentName = sdr["学校担当者支店名称"].ToString();
                 ohm.SelfTel = sdr["学校担当者支店TEL"].ToString();
@@ -498,9 +500,18 @@ namespace AutoOrderFax
             }
 
             ohm.ShippingDate = ((int)sdr["出荷日付"] == 0) ? "" : String.Format("納期指定：{0}", DateTime.ParseExact(sdr["出荷日付"].ToString(), "yyyyMMdd", null).ToString("yyyy/MM/dd"));
+
+            // 右下の受注No
+            // 納入区分が6の時は「即売No」
+            // 発注→受注が紐づいてるときは「受注No」
+            // 紐づかないときは「発注No」
             if ((Int16)sdr["納入区分"] == 6)
             {
                 ohm.OrderNoTimeStamp = "即売No.SB" + sdr["受注表示番号"].ToString() + "-" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            }
+            else if (sdr["受注表示番号"].ToString() == "")
+            {
+                ohm.OrderNoTimeStamp = "No.H" + sdr["発注表示番号"].ToString() + "-" + DateTime.Now.ToString("yyyyMMddHHmmss");
             }
             else
             {
@@ -508,6 +519,18 @@ namespace AutoOrderFax
             }
             ohm.FixedNotes = _fixedNotes.Trim();
 
+        }
+
+        private static string FormatZipCode(string input)
+        {
+            // 7桁の数字の場合
+            if (input.Length == 7 && long.TryParse(input, out _))
+            {
+                return input.Substring(0, 3) + "-" + input.Substring(3, 4);
+            }
+
+            // その他の場合
+            return input;
         }
 
         private static void UpdateOrderState(string OrderNo)

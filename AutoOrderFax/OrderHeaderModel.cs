@@ -17,7 +17,7 @@ namespace AutoOrderFax
         public string DeliveryTypeName { get; set; }
         public string CustomerZip { get; set; } 
         public string CustomerAddress { get; set; } 
-        public string CustomerCode { get; set; } 
+        public int CustomerCode { get; set; } 
         public string CustomerName { get; set; } 
         public string CustomerTel { get; set; }
         public string OperatorName { get; set; }

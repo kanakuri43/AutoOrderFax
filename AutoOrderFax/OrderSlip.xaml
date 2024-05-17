@@ -108,17 +108,14 @@
                                    Margin="0,0,0,4"
                                    VerticalAlignment="Bottom"
                                    Text="{Binding CustomerZip}"                                   
-                                   FontSize="14"/>                        
+                                   FontSize="14"/>
                         <TextBlock Text="{Binding CustomerAddress}"/>
                     </StackPanel>
                     <StackPanel Grid.Row="3" 
                                 Orientation="Horizontal">
                         <!--<Border Width="70"/>-->
                         <TextBlock Width="70"
-                                   Margin="0,0,0,4"
-                                   VerticalAlignment="Bottom"
-                                   Text="{Binding CustomerCode}"                                   
-                                   FontSize="14"/>
+                                   Text="{Binding CustomerCode, StringFormat={}{0:#}}"  />
                         <TextBlock Text="{Binding CustomerName}"/>
                     </StackPanel>
                 </Grid>
@@ -198,15 +195,12 @@
                                             </TextBlock.Text>
                                         </TextBlock>
 
-                                        <TextBlock Grid.Row="1" >
-                                            <TextBlock.Text>
-                                                <MultiBinding StringFormat="{}{0}{1}">
-                                                    <Binding Path="SchoolYear"/>
-                                                    <Binding Path="SchoolClass"/>
-                                                </MultiBinding>
-                                            </TextBlock.Text>
-                                        </TextBlock>
-
+                                        <StackPanel Grid.Row="1"     
+                                                    Orientation="Horizontal">
+                                            <TextBlock Width="20" Text="{Binding SchoolYear}" />
+                                            <TextBlock Width="75" Text="{Binding SchoolClass}" />
+                                            <TextBlock Width="20" Text="{Binding BillingTargetType, StringFormat={}{0:#}}" />
+                                        </StackPanel>
                                     </Grid>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
@@ -302,7 +296,7 @@
                                             <RowDefinition />
                                         </Grid.RowDefinitions>
                                         <TextBlock Grid.Row="0" 
-                                                   Text="{Binding UnitPrice, StringFormat={}{0:N0}}"
+                                                   Text="{Binding UnitPrice, StringFormat={}{0:N2}}"
                                                    TextAlignment="Right"/>
                                         <TextBlock Grid.Row="1" 
                                                    Text="{Binding Price, StringFormat={}{0:N0}}"
@@ -312,9 +306,26 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <!--<DataGridTextColumn Binding="{Binding LinePrivateNotes}" 
-                                            Width="238"/>-->
-                        <DataGridTemplateColumn Width="238">
+                        <DataGridTemplateColumn Width="98">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition />
+                                            <RowDefinition />
+                                        </Grid.RowDefinitions>
+                                        <TextBlock Grid.Row="0" 
+                                                   Text="{Binding UnitSalePrice, StringFormat={}{0:N2}}"
+                                                   TextAlignment="Right"/>
+                                        <TextBlock Grid.Row="1" 
+                                                   Text="{Binding SalePrice, StringFormat={}{0:N0}}"
+                                                   TextAlignment="Right"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+
+                        <DataGridTemplateColumn Width="140">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Grid>
@@ -337,7 +348,7 @@
             </Grid>
 
             <!-- Footer -->
-            
+
             <Grid Grid.Row="4">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="70"/>
@@ -347,7 +358,7 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="2"
-                            Orientation="Vertical">                 
+                            Orientation="Vertical">
                     <TextBlock Text=""/>
                     <TextBlock Text="{Binding PublicNotes}"/>
                     <TextBlock Text="{Binding FixedNotes}"/>

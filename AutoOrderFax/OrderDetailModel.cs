@@ -14,6 +14,7 @@ namespace AutoOrderFax
         public string IndividualName { get; set; }
         public string SchoolYear { get; set; }
         public string SchoolClass { get; set; }
+        public int BillingTargetType { get; set; }
         public string ItemName { get; set; }
         public string ItemCode { get; set; }
         public string SpecName { get; set; }
@@ -24,6 +25,8 @@ namespace AutoOrderFax
         public string SupplierFax { get; set; }
         public float UnitPrice { get; set; }
         public float Price { get; set; }
+        public float UnitSalePrice { get; set; }
+        public float SalePrice { get; set; }
         public int[] ClassDivide { get; set; }
         public string LinePrivateNotes { get; set; }
         public string LinePublicNotes { get; set; }
